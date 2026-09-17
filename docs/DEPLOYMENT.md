@@ -31,10 +31,10 @@ El esquema `bookingnow` es para JDBC: no agregarlo a los esquemas expuestos por
 la Data API de Supabase. Las validaciones de correo, nombre de usuario y contrasena estan en la API.
 
 Render Free no dispone de la ruta IPv6 requerida por la conexión directa de
-Supabase. Por eso este proyecto usa **Connect > Session pooler**, que ofrece
-acceso IPv4 por el puerto **5432**. El `render.yaml` ya contiene el host y
-usuario del pooler; solo la contraseña sigue siendo una variable de Render.
-El JDBC del Session pooler usa `sslmode=require`, como indica Supabase. La opción **Enforce SSL on incoming connections** puede permanecer desactivada en desarrollo; la API solicita TLS de todos modos.
+Supabase. Por eso este proyecto usa **Connect > Transaction pooler** (pooler compartido), que ofrece
+acceso IPv4 por el puerto **6543**. El `render.yaml` ya contiene el host y
+usuario del pooler; solo la contraseña sigue siendo una variable de Render. El JDBC usa
+`sslmode=require&prepareThreshold=0`, como indica Supabase para el pooler compartido de transacciones.
 
 ## 2. Publicar la API en Render
 
@@ -47,7 +47,7 @@ desplegará: `https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow`.
 
 | Variable | Valor |
 |---|---|
-| `DB_URL` | Lo define `render.yaml` con el Session pooler de Supabase |
+| `DB_URL` | Lo define `render.yaml` con el Transaction pooler de Supabase |
 | `DB_USERNAME` | Lo define `render.yaml` con el usuario del pooler |
 | `DB_PASSWORD` | Contraseña de PostgreSQL, no API key |
 | `JWT_SECRET` | Al menos 32 bytes aleatorios en Base64; generar como indica README.md |
@@ -86,7 +86,7 @@ Invoke-RestMethod "$apiUrl/v3/api-docs"
 
 Health debe devolver `status: UP`; también comprueba la conexión a la BD.
 Si falta la tabla, Hibernate falla al arrancar: aplicar primero la migración.
-Si aparece `Tenant or user not found`, revisar host y usuario del Session pooler.
+Si aparece `Tenant or user not found`, revisar host y usuario del Transaction pooler.
 La API usa JWT Bearer. Ver el flujo de registro/login en README.md.
 Usar datos ficticios mientras se define el modelo final.
 
