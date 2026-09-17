@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: bookingnow-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: cloud
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xms64m -Xmx256m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false

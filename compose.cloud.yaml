@@ -1,0 +1,12 @@
+# Usa la BD externa de Supabase; no inicia PostgreSQL local.
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      PORT: "8080"
+      SPRING_PROFILES_ACTIVE: cloud
+    mem_limit: 512m
+    restart: unless-stopped
