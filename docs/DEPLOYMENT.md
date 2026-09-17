@@ -34,7 +34,7 @@ Render Free no dispone de la ruta IPv6 requerida por la conexión directa de
 Supabase. Por eso este proyecto usa **Connect > Session pooler**, que ofrece
 acceso IPv4 por el puerto **5432**. El `render.yaml` ya contiene el host y
 usuario del pooler; solo la contraseña sigue siendo una variable de Render.
-En este entorno, Render corta la negociación TLS con el pooler antes de autenticar. Por eso el Blueprint usa `sslmode=disable`; Supabase debe conservar desactivada la opción **Enforce SSL on incoming connections** (Database > Settings > SSL Configuration).
+El JDBC del Session pooler usa `sslmode=require`, como indica Supabase. La opción **Enforce SSL on incoming connections** puede permanecer desactivada en desarrollo; la API solicita TLS de todos modos.
 
 ## 2. Publicar la API en Render
 
@@ -53,7 +53,7 @@ desplegará: `https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow`.
 | `JWT_SECRET` | Al menos 32 bytes aleatorios en Base64; generar como indica README.md |
 | `CORS_ALLOWED_ORIGINS` | URL HTTPS del frontend, por ejemplo `https://bookingnow-front.onrender.com` |
 
-La contraseña se guarda por separado, sin incluirla en la URL. `sslmode=disable` se usa solo porque Render Free no completó el handshake TLS con este pooler; no activar **Enforce SSL** en Supabase mientras exista esa limitación.
+La contraseña se guarda por separado, sin incluirla en la URL. `sslmode=require` cifra la conexión; se puede habilitar **Enforce SSL** en Supabase cuando el despliegue haya sido comprobado.
 El Blueprint configura `SPRING_PROFILES_ACTIVE=cloud`, health check `/health`
 y un heap máximo de Java de 256 MB. La JVM también consume memoria fuera del heap:
 hay que comprobar el consumo total dentro de los 512 MB del plan gratuito.
