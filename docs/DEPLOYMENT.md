@@ -34,7 +34,7 @@ Render Free no dispone de la ruta IPv6 requerida por la conexión directa de
 Supabase. Por eso este proyecto usa **Connect > Session pooler**, que ofrece
 acceso IPv4 por el puerto **5432**. El `render.yaml` ya contiene el host y
 usuario del pooler; solo la contraseña sigue siendo una variable de Render.
-Se usa el JDBC generado por Supabase sin forzar un modo TLS adicional.
+En este entorno, Render corta la negociación TLS con el pooler antes de autenticar. Por eso el Blueprint usa `sslmode=disable`; Supabase debe conservar desactivada la opción **Enforce SSL on incoming connections** (Database > Settings > SSL Configuration).
 
 ## 2. Publicar la API en Render
 
