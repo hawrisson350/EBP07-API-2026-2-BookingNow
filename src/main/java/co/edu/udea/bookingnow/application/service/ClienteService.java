@@ -21,8 +21,10 @@ public class ClienteService implements CrearClienteUseCase, ObtenerClienteUseCas
     private final ClienteRepositoryPort repository;
     private final ContrasenaPort contrasenaPort;
     private final String hashInexistente;
+    private final co.edu.udea.bookingnow.application.port.out.CorreoRegistradoPort correos;
 
-    public ClienteService(ClienteRepositoryPort repository, ContrasenaPort contrasenaPort) {
+    public ClienteService(ClienteRepositoryPort repository, ContrasenaPort contrasenaPort, co.edu.udea.bookingnow.application.port.out.CorreoRegistradoPort correos) {
+        this.correos = correos;
         this.repository = repository;
         this.contrasenaPort = contrasenaPort;
         this.hashInexistente = contrasenaPort.codificar(java.util.UUID.randomUUID().toString());
@@ -34,6 +36,7 @@ public class ClienteService implements CrearClienteUseCase, ObtenerClienteUseCas
         String correo = ValidacionCuenta.correo(command.correo());
         String nombreUsuario = ValidacionCuenta.nombreUsuario(command.nombreUsuario());
         ValidacionCuenta.contrasena(command.contrasena());
+        if (correos.tipoPorCorreo(correo).isPresent()) { throw new co.edu.udea.bookingnow.domain.exception.ConflictoException("El correo ya está en uso"); }
         if (repository.existeNombreUsuario(nombreUsuario)) { throw new CuentaDuplicadaException(); }
         return repository.guardar(new Cliente(null, correo, nombreUsuario, contrasenaPort.codificar(command.contrasena())));
     }
@@ -46,14 +49,12 @@ public class ClienteService implements CrearClienteUseCase, ObtenerClienteUseCas
     public void eliminarCliente(Long id) { repository.eliminar(id); }
     @Override
     public Cliente iniciarSesionCliente(CredencialesCommand command) {
-        if (command == null || command.nombreUsuario() == null || command.contrasena() == null
-                || command.contrasena().getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
-            throw new co.edu.udea.bookingnow.domain.exception.CredencialesInvalidasException();
-        }
-        var cuenta = repository.obtenerPorNombreUsuario(command.nombreUsuario().strip().toLowerCase(java.util.Locale.ROOT));
+        ValidacionLogin.validar(command);
+        var cuenta = repository.obtenerPorCorreo(command.correo().strip().toLowerCase(java.util.Locale.ROOT));
         boolean valida = contrasenaPort.coincide(command.contrasena(),
                 cuenta.map(Cliente::getContrasenaHash).orElse(hashInexistente));
         if (!valida || cuenta.isEmpty()) { throw new co.edu.udea.bookingnow.domain.exception.CredencialesInvalidasException(); }
+        if (cuenta.get().getEstado() != co.edu.udea.bookingnow.domain.model.EstadoCuenta.ACTIVA) { throw new co.edu.udea.bookingnow.domain.exception.CuentaNoHabilitadaException(); }
         return cuenta.get();
     }
 }

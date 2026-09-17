@@ -8,7 +8,9 @@ public interface ProveedorRepositoryPort {
     Proveedor guardar(Proveedor proveedor);
     List<Proveedor> obtenerTodos();
     Optional<Proveedor> obtenerPorId(Long id);
-    Optional<Proveedor> obtenerPorNombreUsuario(String nombreUsuario);
+    Optional<Proveedor> obtenerPorCorreo(String correo);
     boolean existeNombreUsuario(String nombreUsuario);
+    boolean existeNit(String nit);
+    boolean existeRazonSocial(String razonSocialNormalizada);
     void eliminar(Long id);
 }

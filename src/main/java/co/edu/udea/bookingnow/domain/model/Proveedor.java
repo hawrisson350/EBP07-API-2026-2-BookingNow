@@ -8,6 +8,8 @@ public class Proveedor {
     private String nit;
     private String contrasenaHash;
 
+    private co.edu.udea.bookingnow.domain.model.EstadoCuenta estado = co.edu.udea.bookingnow.domain.model.EstadoCuenta.ACTIVA;
+
     public Proveedor() {}
 
     public Proveedor(Long idProveedor, String correo, String nombreUsuario, String razonSocial, String nit, String contrasenaHash) {
@@ -36,4 +38,6 @@ public class Proveedor {
 
     public String getContrasenaHash() { return contrasenaHash; }
     public void setContrasenaHash(String contrasenaHash) { this.contrasenaHash = contrasenaHash; }
+    public co.edu.udea.bookingnow.domain.model.EstadoCuenta getEstado() { return estado; }
+    public void setEstado(co.edu.udea.bookingnow.domain.model.EstadoCuenta estado) { this.estado = estado; }
 }

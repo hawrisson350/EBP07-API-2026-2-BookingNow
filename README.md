@@ -1,214 +1,374 @@
 # BookingNow API
 
-Java 21, Spring Boot 4.1.1, PostgreSQL y arquitectura hexagonal.
-Infraestructura preparada para Render + Supabase; aun sin despliegue remoto.
-Ver [la guia de infraestructura](docs/DEPLOYMENT.md).
+Esta API es la parte que guarda los datos y aplica las reglas del proyecto.
+El frontend es lo que la persona ve; la API recibe las solicitudes del frontend.
 
-## Modelo provisional
+```mermaid
+flowchart LR
+    U[Persona] --> F[Frontend]
+    F -->|JSON por HTTP| A[BookingNow API]
+    A --> D[(PostgreSQL / Supabase)]
+```
 
-`Usuario` fue sustituido por dos modelos independientes, sin herencia:
+No necesitas saber Java para usarla. Solo debes conocer la ruta, los datos que
+envías y cómo usar el token recibido en el login.
 
-| Modelo | Campos |
-|---|---|
-| Cliente | idCliente, correo, nombreUsuario, contrasenaHash |
-| Proveedor | idProveedor, correo, nombreUsuario, contrasenaHash, razonSocial, nit |
+## 1. Empieza por Swagger
 
-Los IDs son Long en Java y bigint en PostgreSQL. La contrasena se recibe al
-registrar o iniciar sesion; solo se almacena su hash BCrypt y nunca se devuelve.
-Nombre de usuario: 3-50 letras ASCII, numeros, puntos, guiones o guiones bajos;
-se normaliza a minusculas y debe ser unico **por tipo de cuenta**. Un mismo nombre
-puede existir como cliente y proveedor; la ruta de login distingue el tipo.
-Contrasena: minimo 8 caracteres, maximo 72 bytes UTF-8, sin recortar ni cambiar.
-Correo obligatorio con formato basico. Razon social y NIT son obligatorios para
-proveedores; las reglas fiscales del NIT quedan pendientes del modelo definitivo.
-Estas reglas iniciales pueden ajustarse con los requisitos de clase.
+Con la API encendida, abre `http://localhost:8080/swagger-ui.html`.
 
-Reserva, Negocio, Servicio y Multimedia todavia no estan implementados.
+Swagger sirve para probar la API sin construir todavía el frontend: eliges una
+ruta, escribes datos de ejemplo y pulsas **Execute**.
 
-## Estructura hexagonal
+La dirección base local es:
 
 ```text
-domain/model/                   Cliente y Proveedor, sin JPA
-application/port/in/cliente/    Casos de uso y comando de registro de clientes
-application/port/in/proveedor/  Casos de uso y comando de registro de proveedores
-application/port/in/auth/       Credenciales compartidas para iniciar sesion
-application/port/out/           Repositorios y ContrasenaPort
-application/service/            Casos de uso y validaciones
-infrastructure/adapter/in/rest/  Controladores, respuestas sin credenciales
-infrastructure/adapter/out/     Persistencia JPA y BCrypt
-infrastructure/config/          Sesiones y autorizacion con Spring Security
+http://localhost:8080
 ```
 
-Cada servicio implementa los puertos de entrada y utiliza los puertos de salida.
-Los adaptadores convierten dominio/entidad JPA. Las sesiones y HTTP se gestionan
-fuera del dominio. El listado se conserva como caso de uso interno; su acceso
-HTTP esta bloqueado hasta definir un rol administrador.
+Cuando se publique en Render, se cambia únicamente esa dirección por la URL de
+Render. Las rutas, como `/api/auth/login`, seguirán siendo iguales.
 
-## Compilar sin Docker en Windows
+Si el frontend corre en `http://localhost:5173` (Vite), `:3000` (React) o `:4200`
+(Angular), la API ya permite esas direcciones. Para el dominio publicado del
+frontend, configurar `CORS_ALLOWED_ORIGINS` con su URL HTTPS antes de desplegar.
 
-Abrir PowerShell en la raiz del proyecto (donde esta `pom.xml`). Requisitos:
+## 2. Cuentas de desarrollo
 
-- JDK 21 instalado y `JAVA_HOME` apuntando a su carpeta de instalacion.
-- Conexion a Internet para descargar Maven y dependencias la primera vez.
+Después de ejecutar [initial-admin.sql](docs/db/initial-admin.sql) en Supabase,
+estas cuentas permiten probar las pantallas. Son datos ficticios de desarrollo.
 
-No necesitas instalar Maven: el proyecto incluye Maven Wrapper. Comprobar Java:
+| Tipo | Correo | Contraseña | Uso |
+|---|---|---|---|
+| Administrador | `admin@bookingnow.local` | `AdminDemo123!` | Consultar cuentas, negocios y servicios |
+| Cliente | `cliente.demo@bookingnow.local` | `ClienteDemo123!` | Probar cuenta de cliente |
+| Proveedor | `proveedor.demo@bookingnow.local` | `ProveedorDemo123!` | Probar negocio y servicios |
 
-```powershell
-java -version
-javac -version
-.\mvnw.cmd -version
+El proveedor demo ya tiene un negocio, dos elementos multimedia y un servicio.
+Estas contraseñas no son secretas y no deben usarse en producción.
+
+## 3. Registro, login y token
+
+Una persona se registra una vez. Luego inicia sesión con correo y contraseña.
+La API devuelve un **token**, una cadena larga que prueba quién inició sesión.
+Guárdalo durante la sesión y envíalo en las rutas protegidas.
+
+```mermaid
+sequenceDiagram
+    participant F as Frontend
+    participant A as API
+    F->>A: POST /api/auth/login con correo y contraseña
+    A-->>F: accessToken y rol
+    F->>A: Ruta protegida + Authorization: Bearer token
+    A-->>F: Datos o resultado
 ```
 
-Solo compilar el codigo, sin ejecutar pruebas ni generar el JAR:
+El token dura 30 minutos. Si la API devuelve `401`, elimina el token y pide
+iniciar sesión otra vez.
 
-```powershell
-.\mvnw.cmd clean compile
+### Código JavaScript mínimo
+
+```js
+const API = 'http://localhost:8080';
+
+async function iniciarSesion(correo, contrasena) {
+  const respuesta = await fetch(`${API}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ correo, contrasena })
+  });
+
+  const datos = await respuesta.json();
+  if (!respuesta.ok) throw new Error(datos.detail);
+
+  sessionStorage.setItem('token', datos.accessToken);
+  sessionStorage.setItem('rol', datos.cuenta.rol);
+  return datos.cuenta;
+}
+
+function encabezadosConToken() {
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${sessionStorage.getItem('token')}`
+  };
+}
 ```
 
-Compilar, ejecutar las pruebas y generar el JAR ejecutable:
+Para cerrar sesión, borra `token` y `rol` de `sessionStorage`. El campo visual
+de contraseña debe usar `type="password"`.
 
-```powershell
-.\mvnw.cmd clean verify
+## 4. Qué puede hacer cada rol
+
+| Rol del login | Pantallas o acciones permitidas |
+|---|---|
+| `CLIENTE` | Ver su propia cuenta. Las reservas llegarán en otro sprint. |
+| `PROVEEDOR` | Ver su cuenta, crear un único negocio y gestionar sus servicios. |
+| `ADMINISTRADOR` | Consultar clientes, proveedores, negocios y los servicios de cada negocio. |
+
+Usa `cuenta.rol` para mostrar las opciones correctas. La API también revisa los
+permisos: ocultar un botón no es una medida de seguridad por sí sola.
+
+## 5. Todas las rutas
+
+Para una ruta protegida agrega este encabezado:
+
+```text
+Authorization: Bearer EL_TOKEN_DEL_LOGIN
 ```
 
-El archivo generado es `target/bookingnow-0.0.1-SNAPSHOT.jar`.
-**Para compilar y ejecutar las pruebas no necesitas Docker ni PostgreSQL:**
-las pruebas usan H2 en memoria. Para iniciar la API normalmente si necesitas
-una conexion a PostgreSQL.
+| Método | Ruta | Token | Uso |
+|---|---|---:|---|
+| GET | `/health` | No | Revisar si la API está viva |
+| POST | `/api/clientes` | No | Registrar cliente |
+| POST | `/api/proveedores` | No | Registrar proveedor |
+| POST | `/api/auth/login` | No | Iniciar sesión de cualquier cuenta |
+| GET | `/api/clientes/{id}` | Cliente dueño | Ver su cuenta |
+| GET | `/api/proveedores/{id}` | Proveedor dueño | Ver su cuenta |
+| DELETE | `/api/clientes/{id}` | Cliente dueño | Eliminar su cuenta |
+| DELETE | `/api/proveedores/{id}` | Proveedor dueño | Eliminar su cuenta |
+| GET | `/api/clientes` | Administrador | Listar clientes |
+| GET | `/api/proveedores` | Administrador | Listar proveedores |
+| GET | `/api/negocios` | Administrador | Listar todos los negocios |
+| GET | `/api/negocios/mio` | Proveedor | Ver el negocio propio y si puede crear uno |
+| POST | `/api/negocios` | Proveedor | Crear negocio |
+| GET | `/api/negocios/{idNegocio}/servicios` | Proveedor dueño o administrador | Listar servicios |
+| POST | `/api/negocios/{idNegocio}/servicios` | Proveedor dueño | Crear servicio |
 
-## Ejecutar localmente sin Docker
+## 6. Datos de cada formulario
 
-### Demo local sin PostgreSQL (servidor de desarrollo)
+Envía siempre JSON con el encabezado `Content-Type: application/json`.
 
-Para abrir Swagger y probar la API antes de configurar la BD, ejecutar en
-PowerShell desde la raiz del proyecto:
+### Registrar cliente
+
+`POST /api/clientes`
+
+```json
+{
+  "correo": "ana@example.com",
+  "nombreUsuario": "ana",
+  "contrasena": "ClaveDemo123!"
+}
+```
+
+### Registrar proveedor
+
+`POST /api/proveedores`
+
+```json
+{
+  "correo": "proveedor@example.com",
+  "nombreUsuario": "proveedor_demo",
+  "contrasena": "ClaveDemo123!",
+  "razonSocial": "Proveedor Demo SAS",
+  "nit": "900765432-1"
+}
+```
+
+### Iniciar sesión
+
+`POST /api/auth/login`
+
+```json
+{
+  "correo": "proveedor.demo@bookingnow.local",
+  "contrasena": "ProveedorDemo123!"
+}
+```
+
+Respuesta resumida:
+
+```json
+{
+  "accessToken": "eyJ...",
+  "tokenType": "Bearer",
+  "expiresIn": 1800,
+  "cuenta": {
+    "id": 1,
+    "rol": "PROVEEDOR",
+    "roles": ["PROVEEDOR"],
+    "correo": "proveedor.demo@bookingnow.local",
+    "nombreUsuario": "proveedor_demo"
+  }
+}
+```
+
+Nunca guardes ni muestres la contraseña después de hacer login.
+
+### Consultar mi negocio
+
+`GET /api/negocios/mio` con token de proveedor devuelve algo parecido a:
+
+```json
+{
+  "puedeRegistrar": false,
+  "negocio": { "idNegocio": 1, "nombre": "Negocio Demo" }
+}
+```
+
+Si `puedeRegistrar` es `true`, muestra el formulario de negocio. Si es `false`,
+ocúltalo: cada proveedor tiene un solo negocio. Guarda `idNegocio` porque se usa
+para servicios.
+
+### Consultas del administrador
+
+Con el token de administrador, usa `GET /api/negocios` para obtener todos los
+negocios. La respuesta es una lista: cada elemento trae su `idNegocio`, nombre,
+contacto, categoría y galería. Para ver los servicios de uno, pide
+`GET /api/negocios/{idNegocio}/servicios`. Reemplaza `{idNegocio}` por el número
+del negocio seleccionado. El administrador solo consulta estos datos; no puede
+crear un negocio ni servicios.
+
+### Crear negocio
+
+`POST /api/negocios` con token de proveedor.
+
+```json
+{
+  "nombre": "Mi negocio",
+  "correo": "contacto@minegocio.com",
+  "numContacto": "+57 3001234567",
+  "direccion": "Calle 10 # 20-30",
+  "categoria": "Bienestar",
+  "modalidadVirtual": false,
+  "fotoPrincipal": "https://ejemplo.com/portada.jpg",
+  "galeria": [{ "url": "https://ejemplo.com/foto.jpg", "tipo": "IMAGEN" }]
+}
+```
+
+Para negocio virtual usa `"modalidadVirtual": true`; entonces `direccion` puede
+omitirse. Foto y galería son opcionales. Por ahora son enlaces HTTPS, no archivos.
+Galería admite máximo 20 elementos `IMAGEN` o `VIDEO`.
+
+### Crear servicio
+
+`POST /api/negocios/{idNegocio}/servicios` con token de proveedor. Cambia
+`{idNegocio}` por el número recibido en `GET /api/negocios/mio`.
+
+```json
+{
+  "nombre": "Asesoría inicial",
+  "duracionMinutos": 30,
+  "precio": 25000.00,
+  "descripcion": "Sesión inicial de asesoría.",
+  "imagenReferencia": "https://ejemplo.com/asesoria.jpg"
+}
+```
+
+Duración: entero mayor que cero. Precio: cero o mayor, máximo dos decimales.
+Imagen: opcional, URL HTTPS.
+
+## 7. Cómo tratar los errores
+
+| Código | Significa | Acción del frontend |
+|---:|---|---|
+| `200` | Consulta o login exitoso | Usar los datos |
+| `201` | Registro creado | Mostrar el mensaje de éxito |
+| `400` | Datos faltantes o inválidos | Mostrar `detail` y `campos` junto a los inputs |
+| `401` | Credenciales o token inválido | Pedir login de nuevo |
+| `403` | No tiene permiso | Mostrar “No tienes permiso” |
+| `404` | El dato no existe | Mostrar aviso o volver atrás |
+| `409` | Dato repetido o segundo negocio | Mostrar el mensaje y no reenviar |
+
+Ejemplo de error de validación:
+
+```json
+{
+  "status": 400,
+  "detail": "Hay campos inválidos",
+  "campos": { "correo": "Correo inválido" }
+}
+```
+
+Reglas útiles antes de enviar:
+
+- Correo: parecido a `nombre@dominio.com`.
+- Nombre de usuario: 3 a 50 caracteres; minúsculas, números, punto, guion o guion bajo.
+- Contraseña: mínimo 8 caracteres, una letra, un número y un carácter especial.
+- Razón social: mínimo 3 caracteres.
+- NIT: exactamente `#########-#`.
+
+El frontend valida para ayudar a la persona; la API valida de nuevo por seguridad.
+
+## 8. Orden sugerido para construir el frontend
+
+1. Crear las pantallas de registro de cliente y proveedor.
+2. Crear login y guardar token/rol.
+3. Redirigir según `cuenta.rol`.
+4. Para proveedor, pedir `GET /api/negocios/mio` al entrar.
+5. Con `idNegocio`, mostrar y crear servicios.
+6. Para administrador, cargar los listados globales.
+7. Crear botón de cerrar sesión que borre `sessionStorage`.
+
+## 9. Encender la API localmente
+
+### Demo rápida, sin PostgreSQL
+
+Requiere Java 21. En PowerShell, desde la carpeta raíz:
 
 ```powershell
 .\mvnw.cmd test-compile spring-boot:run "-Dspring-boot.run.useTestClasspath=true" "-Dspring-boot.run.additional-classpath-elements=target/test-classes" "-Dspring-boot.run.profiles=test" "-Dspring-boot.run.arguments=--server.address=127.0.0.1 --server.port=8080"
 ```
 
-Mantener esa terminal abierta y visitar `http://localhost:8080/swagger-ui.html`.
-Este comando usa H2 en memoria mediante el perfil de pruebas: los datos se
-pierden al detener el servidor con `Ctrl+C`. Solo escucha en la maquina local.
-La configuracion normal y la de Render siguen usando PostgreSQL.
+Esta base es temporal: al cerrar la terminal con `Ctrl+C`, se borran sus datos.
 
-### Servidor con PostgreSQL
+### Usar Supabase
 
-Con PostgreSQL instalado y ejecutandose, crear primero la base `bookingnow`
-(por ejemplo, desde pgAdmin con `CREATE DATABASE bookingnow;`). Configurar las
-credenciales reales en la misma terminal de PowerShell:
-
-```powershell
-$env:DB_URL = 'jdbc:postgresql://localhost:5432/bookingnow'
-$env:DB_USERNAME = 'postgres'
-$env:DB_PASSWORD = 'tu-clave-local'
-java -jar .\target\bookingnow-0.0.1-SNAPSHOT.jar
-```
-
-Como alternativa al JAR, ejecutar directamente con Maven:
+El repositorio ya incluye `.env` con la configuración académica de Supabase.
+No necesitas escribir variables de entorno: abre PowerShell en la raíz y ejecuta:
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-Usar una sola de las dos opciones de arranque a la vez. La API queda en
-`http://localhost:8080` y Swagger en `http://localhost:8080/swagger-ui.html`.
-Para detenerla, presionar `Ctrl+C`. Si el puerto esta ocupado, definir
-`$env:PORT = '8081'` antes de arrancar y usar ese puerto en las URLs.
+El archivo activa el perfil `cloud`, que usa Supabase y valida las tablas ya
+creadas. Para Docker, Render y detalles de Supabase consulta [DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
-Spring Boot no lee `.env` automaticamente: para estos comandos se usan las
-variables `$env:...`. Para conectar con Supabase en lugar de PostgreSQL local,
-seguir [la guia de infraestructura](docs/DEPLOYMENT.md).
+## 10. Si algo falla: cómo leer los logs
 
-El perfil local usa `ddl-auto=update`. El perfil `cloud` usa `validate` y requiere
-las tablas del contrato descrito en docs/DEPLOYMENT.md. No se borran tablas remotas.
+En cada respuesta la API devuelve el encabezado `X-Request-Id`. Si el frontend
+envía uno válido, la API conserva ese mismo valor. Esto permite relacionar un
+error que ve una persona con una línea específica en los logs de Render.
 
-## Swagger UI
+```js
+const respuesta = await fetch(`${API}/api/auth/login`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'X-Request-Id': crypto.randomUUID() },
+  body: JSON.stringify({ correo, contrasena })
+});
 
-Con la API iniciada y la BD disponible, abrir:
-
-- Interfaz: `http://localhost:8080/swagger-ui.html`
-- Documento OpenAPI: `http://localhost:8080/v3/api-docs`
-
-En Render, usar las mismas rutas sobre la URL HTTPS de la API.
-La documentacion es publica; los permisos de los endpoints se mantienen.
-
-Para probar desde Swagger UI:
-
-1. Ejecutar `GET /api/auth/csrf` con **Try it out > Execute**.
-2. Copiar el campo `token` de la respuesta.
-3. Pulsar **Authorize**, pegarlo en `csrfToken` y confirmar.
-4. Registrar una cuenta con `POST /api/clientes` o `POST /api/proveedores`.
-   Completar los campos con valores validos segun las reglas anteriores.
-5. Ejecutar el `/login` correspondiente con `nombreUsuario` y `contrasena`.
-6. Consultar o eliminar el propio ID: el navegador envia la cookie de sesion.
-7. Para salir, ejecutar `POST /api/auth/logout`.
-
-Despues del logout o de expirar la sesion, repetir los pasos 1-3. El token CSRF
-no reemplaza el login. Los listados globales bloqueados no aparecen en Swagger.
-La integracion usa [springdoc-openapi](https://springdoc.org/) 3.1.1 para Spring Boot 4.
-
-## Registro e inicio de sesion
-
-Las rutas de cliente y proveedor son independientes. No se genera JWT: el login
-crea una sesion con cookie HttpOnly, que vence tras 30 minutos de inactividad.
-Las operaciones POST y DELETE requieren un token CSRF y la cookie asociada.
-
-| Metodo | Ruta | Resultado |
-|---|---|---|
-| GET | `/health` | Estado de API y BD, publico |
-| GET | `/api/auth/csrf` | Token y nombre del header CSRF, publico |
-| POST | `/api/clientes` | Registro, 201 |
-| POST | `/api/proveedores` | Registro, 201 |
-| POST | `/api/clientes/login` | Login de cliente, 200 y cookie de sesion |
-| POST | `/api/proveedores/login` | Login de proveedor, 200 y cookie de sesion |
-| GET | `/api/clientes/{id}` o `/api/proveedores/{id}` | Solo el titular, 200 |
-| DELETE | `/api/clientes/{id}` o `/api/proveedores/{id}` | Solo el titular, 204 y cierre de su sesion actual |
-| POST | `/api/auth/logout` | Cierra la sesion, 204 |
-
-Datos invalidos: 400; credenciales incorrectas o acceso sin sesion: 401;
-CSRF ausente/acceso a otra cuenta: 403; nombre duplicado: 409.
-Las rutas antiguas `/api/usuarios` ya no existen.
-
-Ejemplo completo en PowerShell (conserva cookies):
-
-```powershell
-$base = 'http://localhost:8080'
-$csrf = Invoke-RestMethod "$base/api/auth/csrf" -SessionVariable sesion
-$headers = @{}
-$headers[$csrf.headerName] = $csrf.token
-
-$registro = @{ correo='ana@example.com'; nombreUsuario='ana'; contrasena='ClaveDemo123!' } | ConvertTo-Json
-Invoke-RestMethod "$base/api/clientes" -Method Post -WebSession $sesion -Headers $headers -ContentType 'application/json' -Body $registro
-
-$login = @{ nombreUsuario='ana'; contrasena='ClaveDemo123!' } | ConvertTo-Json
-$cliente = Invoke-RestMethod "$base/api/clientes/login" -Method Post -WebSession $sesion -Headers $headers -ContentType 'application/json' -Body $login
-Invoke-RestMethod "$base/api/clientes/$($cliente.idCliente)" -WebSession $sesion
-Invoke-RestMethod "$base/api/auth/logout" -Method Post -WebSession $sesion -Headers $headers
+console.log(respuesta.headers.get('X-Request-Id'));
 ```
 
-Para proveedor, usar `/api/proveedores` y agregar al registro `razonSocial` y `nit`:
+En Render abre el servicio, entra a **Logs** y busca ese identificador. Verás
+líneas como estas:
 
-```json
-{"correo":"negocio@example.com","nombreUsuario":"negocio","contrasena":"ClaveDemo123!","razonSocial":"Negocio Demo","nit":"900123456-7"}
+```text
+http_request method=POST path=/api/auth/login status=401 duration_ms=...
+login tipo_detectado=ADMINISTRADOR
+admin_login result=contrasena_incorrecta id_usuario=...
 ```
 
-El frontend debera conservar cookies y enviar el header CSRF. La integracion con
-un frontend de otro origen (CORS y politica de cookies) queda por definir cuando
-se conozca su dominio. No hay recuperacion de contrasena ni limitacion de intentos
-por ahora. Las sesiones no sobreviven a reinicios de Render.
+Los logs nunca incluyen contraseñas, JWT, hashes ni el cuerpo de la petición.
+Para el administrador, los resultados posibles son `usuario_no_encontrado`,
+`contrasena_incorrecta`, `cuenta_no_habilitada` o `exitoso`.
 
-## Verificacion
+## 11. Para quienes trabajen en backend
+
+```text
+domain/          Modelos y reglas: Cliente, Proveedor, Usuario, Negocio y Servicio.
+application/     Casos de uso: qué puede hacer el sistema.
+infrastructure/  HTTP, JWT, JPA, PostgreSQL y Swagger.
+```
+
+Si agregas una entidad, sigue esas tres capas. Las historias y evidencia del
+sprint están en [`.codex`](.codex/README.md). El contrato de una base nueva está
+en [sprint-1-schema.sql](docs/db/sprint-1-schema.sql).
+
+## 12. Verificar cambios
 
 ```powershell
 .\mvnw.cmd clean verify
 ```
 
-Las pruebas usan H2 solo para pruebas: registro, hash persistido, login de ambos
-tipos, validaciones, duplicados, CSRF, permisos, logout, eliminacion, health y
-validacion del esquema cloud. No sustituyen probar PostgreSQL real.
-
-Docker local con BD: `docker compose up --build -d` (definir DB_PASSWORD).
-Docker con Supabase externo: copiar `.env.example` a `.env`, completar sus valores
-y ejecutar `docker compose -f compose.cloud.yaml up --build -d`.
-Spring Boot por si solo no carga `.env`. Ver la guia para HTTPS y perfil cloud.
+La última verificación local aprobó 21 pruebas. H2 sirve para pruebas rápidas;
+los cambios de base de datos también deben probarse en PostgreSQL/Supabase.

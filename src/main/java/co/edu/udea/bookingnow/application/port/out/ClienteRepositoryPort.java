@@ -8,7 +8,7 @@ public interface ClienteRepositoryPort {
     Cliente guardar(Cliente cliente);
     List<Cliente> obtenerTodos();
     Optional<Cliente> obtenerPorId(Long id);
-    Optional<Cliente> obtenerPorNombreUsuario(String nombreUsuario);
+    Optional<Cliente> obtenerPorCorreo(String correo);
     boolean existeNombreUsuario(String nombreUsuario);
     void eliminar(Long id);
 }

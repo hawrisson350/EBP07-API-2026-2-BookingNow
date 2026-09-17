@@ -6,6 +6,7 @@ import co.edu.udea.bookingnow.application.port.in.cliente.EliminarClienteUseCase
 import co.edu.udea.bookingnow.application.port.in.cliente.CrearClienteUseCase;
 
 import co.edu.udea.bookingnow.infrastructure.adapter.in.rest.dto.ClienteResponse;
+import co.edu.udea.bookingnow.infrastructure.adapter.in.rest.dto.RegistroResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +31,8 @@ public class ClienteController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ClienteResponse crear(@RequestBody RegistrarClienteCommand command) {
-        return ClienteResponse.from(crear.crearCliente(command));
+    public RegistroResponse<ClienteResponse> crear(@RequestBody RegistrarClienteCommand command) {
+        return new RegistroResponse<>("La cuenta fue creada exitosamente", ClienteResponse.from(crear.crearCliente(command)));
     }
 
     @GetMapping
@@ -48,9 +49,7 @@ public class ClienteController {
     @PreAuthorize("authentication.name == 'cliente:' + #id")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id, jakarta.servlet.http.HttpServletRequest request) {
+    public void eliminar(@PathVariable Long id) {
         eliminar.eliminarCliente(id);
-        if (request.getSession(false) != null) { request.getSession(false).invalidate(); }
-        org.springframework.security.core.context.SecurityContextHolder.clearContext();
     }
 }

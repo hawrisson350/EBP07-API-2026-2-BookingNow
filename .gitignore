@@ -1,7 +1,7 @@
 HELP.md
-.env
-.env.*
-!.env.example
+
+# Archivos de referencia locales (Word, Excel, Markdown, etc.)
+/workspace/
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

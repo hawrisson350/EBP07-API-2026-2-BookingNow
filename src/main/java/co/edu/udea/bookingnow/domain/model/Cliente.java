@@ -6,6 +6,8 @@ public class Cliente {
     private String nombreUsuario;
     private String contrasenaHash;
 
+    private co.edu.udea.bookingnow.domain.model.EstadoCuenta estado = co.edu.udea.bookingnow.domain.model.EstadoCuenta.ACTIVA;
+
     public Cliente() {}
 
     public Cliente(Long idCliente, String correo, String nombreUsuario, String contrasenaHash) {
@@ -26,4 +28,6 @@ public class Cliente {
 
     public String getContrasenaHash() { return contrasenaHash; }
     public void setContrasenaHash(String contrasenaHash) { this.contrasenaHash = contrasenaHash; }
+    public co.edu.udea.bookingnow.domain.model.EstadoCuenta getEstado() { return estado; }
+    public void setEstado(co.edu.udea.bookingnow.domain.model.EstadoCuenta estado) { this.estado = estado; }
 }

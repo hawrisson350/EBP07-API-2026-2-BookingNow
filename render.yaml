@@ -7,6 +7,8 @@ services:
     dockerContext: .
     healthCheckPath: /health
     envVars:
+      - key: JWT_SECRET
+        sync: false
       - key: SPRING_PROFILES_ACTIVE
         value: cloud
       - key: JAVA_TOOL_OPTIONS
@@ -16,4 +18,6 @@ services:
       - key: DB_USERNAME
         sync: false
       - key: DB_PASSWORD
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
         sync: false

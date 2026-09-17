@@ -20,51 +20,49 @@ public class OpenApiConfig {
     OpenAPI bookingNowOpenApi() {
         return new OpenAPI()
             .info(new Info().title("BookingNow API").version("0.0.1")
-                .description("Registro e inicio de sesion de clientes y proveedores. "
-                    + "Primero ejecuta GET /api/auth/csrf y copia token en Authorize > csrfToken. "
-                    + "Despues registra una cuenta e inicia sesion con su endpoint /login. "
-                    + "El navegador conserva la cookie de sesion automaticamente. "
-                    + "Tras logout o expiracion, solicita un nuevo token CSRF. No se utiliza JWT."))
-            .components(new Components().addSecuritySchemes("csrfToken", new SecurityScheme()
-                .type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER).name("X-CSRF-TOKEN")
-                .description("Valor token de GET /api/auth/csrf, obtenido en este mismo navegador. No es la contrasena.")));
+                .description("Registra una cuenta e inicia sesion con correo y contraseña en /api/auth/login. "
+                    + "Copia accessToken en Authorize > bearerAuth. No se necesitan cookies ni token CSRF. "
+                    + "El JWT vence a los 30 minutos por defecto."))
+            .components(new Components().addSecuritySchemes("bearerAuth", new SecurityScheme()
+                .type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")
+                .description("Pega solo accessToken, sin el prefijo Bearer.")));
+
     }
 
     @Bean
     OpenApiCustomizer documentarOperaciones() {
         return api -> {
-            // Logout lo atiende un filtro de Spring Security, no un controlador.
-            api.path("/api/auth/logout", new PathItem().post(new Operation()
-                .operationId("cerrarSesion").summary("Cerrar sesion")
-                .responses(new ApiResponses().addApiResponse("204", new ApiResponse().description("Sesion cerrada")))));
             api.getPaths().forEach((path, item) -> {
-                // El listado de cuentas esta bloqueado hasta definir administradores.
-                if (path.equals("/api/clientes") || path.equals("/api/proveedores")) {
-                    item.setGet(null);
-                }
                 item.readOperationsMap().forEach((method, operation) -> {
-                    String tag = path.contains("clientes") ? "Clientes"
+                    String tag = path.contains("/servicios") ? "Servicios" : path.contains("negocios") ? "Negocios" : path.contains("clientes") ? "Clientes"
                             : path.contains("proveedores") ? "Proveedores" : "Autenticacion";
                     operation.setTags(List.of(tag));
                     if (operation.getSummary() == null) {
-                        operation.setSummary(path.endsWith("/login") ? "Iniciar sesion"
-                            : path.endsWith("/csrf") ? "Obtener token CSRF"
-                            : method == PathItem.HttpMethod.POST ? "Registrar cuenta"
-                            : method == PathItem.HttpMethod.DELETE ? "Eliminar mi cuenta" : "Consultar mi cuenta");
-                    }
-                    if (method == PathItem.HttpMethod.POST || method == PathItem.HttpMethod.DELETE) {
-                        operation.addSecurityItem(new SecurityRequirement().addList("csrfToken"));
-                        operation.getResponses().addApiResponse("403", new ApiResponse().description("Token CSRF ausente/invalido o acceso no permitido"));
+                        operation.setSummary((method == PathItem.HttpMethod.GET && (path.equals("/api/clientes") || path.equals("/api/proveedores"))) ? "Listar cuentas (administrador)"
+                            : method == PathItem.HttpMethod.GET && path.equals("/api/negocios") ? "Listar negocios (administrador)"
+                            : path.endsWith("/login") ? "Iniciar sesion"
+                            : method == PathItem.HttpMethod.POST ? (path.contains("servicios") ? "Registrar servicio" : path.contains("negocios") ? "Registrar negocio" : "Registrar cuenta")
+                            : method == PathItem.HttpMethod.DELETE ? "Eliminar mi cuenta" : path.contains("servicios") ? "Listar servicios del negocio" : path.contains("negocios") ? "Consultar mi negocio y disponibilidad de registro" : "Consultar mi cuenta");
                     }
                     if (path.endsWith("/login")) {
                         operation.getResponses().addApiResponse("401", new ApiResponse().description("Credenciales incorrectas"));
                     }
-                    if (path.endsWith("/{id}")) {
-                        operation.setDescription("Requiere iniciar sesion como titular de esta cuenta. La cookie se envia automaticamente desde Swagger UI.");
-                        operation.getResponses().addApiResponse("401", new ApiResponse().description("Sesion requerida"));
+                    if (method == PathItem.HttpMethod.GET && (path.equals("/api/clientes") || path.equals("/api/proveedores") || path.equals("/api/negocios"))) {
+                        operation.addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
+                        operation.setDescription("Requiere JWT con rol ADMINISTRADOR.");
+                        operation.getResponses().addApiResponse("401", new ApiResponse().description("JWT ausente, inválido o vencido"));
+                        operation.getResponses().addApiResponse("403", new ApiResponse().description("La cuenta no tiene rol administrador"));
+                    }
+                    if (path.endsWith("/{id}") || (path.startsWith("/api/negocios") && !path.equals("/api/negocios"))) {
+                        operation.addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
+                        boolean consultaServicios = method == PathItem.HttpMethod.GET && path.contains("/servicios");
+                        operation.setDescription(consultaServicios
+                                ? "Requiere JWT del proveedor propietario o de un ADMINISTRADOR."
+                                : "Requiere JWT del proveedor propietario.");
+                        operation.getResponses().addApiResponse("401", new ApiResponse().description("JWT ausente, invalido o vencido"));
                         operation.getResponses().addApiResponse("403", new ApiResponse().description("La cuenta pertenece a otra identidad"));
                     }
-                    if (method == PathItem.HttpMethod.POST && !path.endsWith("/logout")) {
+                    if (method == PathItem.HttpMethod.POST) {
                         operation.getResponses().addApiResponse("400", new ApiResponse().description("Datos invalidos"));
                         if (!path.endsWith("/login")) {
                             operation.getResponses().addApiResponse("409", new ApiResponse().description("Nombre de usuario duplicado"));

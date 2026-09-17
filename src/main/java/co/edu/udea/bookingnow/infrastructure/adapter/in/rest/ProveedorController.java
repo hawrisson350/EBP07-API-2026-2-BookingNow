@@ -6,6 +6,7 @@ import co.edu.udea.bookingnow.application.port.in.proveedor.EliminarProveedorUse
 import co.edu.udea.bookingnow.application.port.in.proveedor.CrearProveedorUseCase;
 
 import co.edu.udea.bookingnow.infrastructure.adapter.in.rest.dto.ProveedorResponse;
+import co.edu.udea.bookingnow.infrastructure.adapter.in.rest.dto.RegistroResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +31,8 @@ public class ProveedorController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ProveedorResponse crear(@RequestBody RegistrarProveedorCommand command) {
-        return ProveedorResponse.from(crear.crearProveedor(command));
+    public RegistroResponse<ProveedorResponse> crear(@RequestBody RegistrarProveedorCommand command) {
+        return new RegistroResponse<>("La cuenta fue creada exitosamente", ProveedorResponse.from(crear.crearProveedor(command)));
     }
 
     @GetMapping
@@ -48,9 +49,7 @@ public class ProveedorController {
     @PreAuthorize("authentication.name == 'proveedor:' + #id")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id, jakarta.servlet.http.HttpServletRequest request) {
+    public void eliminar(@PathVariable Long id) {
         eliminar.eliminarProveedor(id);
-        if (request.getSession(false) != null) { request.getSession(false).invalidate(); }
-        org.springframework.security.core.context.SecurityContextHolder.clearContext();
     }
 }

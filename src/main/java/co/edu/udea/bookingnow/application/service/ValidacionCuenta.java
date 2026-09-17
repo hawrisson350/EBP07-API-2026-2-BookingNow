@@ -31,8 +31,10 @@ final class ValidacionCuenta {
 
     static void contrasena(String valor) {
         if (valor == null || valor.isBlank() || valor.length() < 8
-                || valor.getBytes(StandardCharsets.UTF_8).length > 72) {
-            throw new IllegalArgumentException("La contrasena debe tener al menos 8 caracteres y hasta 72 bytes UTF-8");
+                || valor.getBytes(StandardCharsets.UTF_8).length > 72
+                || !valor.matches("(?s).*\\p{L}.*") || !valor.matches("(?s).*[0-9].*")
+                || !valor.matches("(?s).*[^\\p{L}\\p{N}\\s].*")) {
+            throw new IllegalArgumentException("La contraseña debe tener mínimo 8 caracteres, letra, número y carácter especial; máximo 72 bytes UTF-8");
         }
     }
 }
