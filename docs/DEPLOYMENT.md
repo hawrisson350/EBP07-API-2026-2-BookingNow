@@ -53,8 +53,7 @@ desplegará: `https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow`.
 | `JWT_SECRET` | Al menos 32 bytes aleatorios en Base64; generar como indica README.md |
 | `CORS_ALLOWED_ORIGINS` | URL HTTPS del frontend, por ejemplo `https://bookingnow-front.onrender.com` |
 
-La contraseña se guarda por separado, sin incluirla en la URL. `sslmode=require`
-exige cifrado TLS; no equivale a validación de identidad con `verify-full`.
+La contraseña se guarda por separado, sin incluirla en la URL. `sslmode=disable` se usa solo porque Render Free no completó el handshake TLS con este pooler; no activar **Enforce SSL** en Supabase mientras exista esa limitación.
 El Blueprint configura `SPRING_PROFILES_ACTIVE=cloud`, health check `/health`
 y un heap máximo de Java de 256 MB. La JVM también consume memoria fuera del heap:
 hay que comprobar el consumo total dentro de los 512 MB del plan gratuito.
