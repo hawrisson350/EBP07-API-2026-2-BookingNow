@@ -14,9 +14,9 @@ services:
       - key: JAVA_TOOL_OPTIONS
         value: -Xms64m -Xmx256m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError
       - key: DB_URL
-        value: jdbc:postgresql://db.hsadubnvbbfiicxfmkcj.supabase.co:5432/postgres?sslmode=require
+        value: jdbc:postgresql://aws-0-ca-central-1.pooler.supabase.com:5432/postgres
       - key: DB_USERNAME
-        value: postgres
+        value: postgres.hsadubnvbbfiicxfmkcj
       - key: DB_PASSWORD
         sync: false
       - key: CORS_ALLOWED_ORIGINS

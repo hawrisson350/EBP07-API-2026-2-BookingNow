@@ -30,12 +30,11 @@ prueba PostgreSQL del flujo de administrador después de aplicar esa migración.
 El esquema `bookingnow` es para JDBC: no agregarlo a los esquemas expuestos por
 la Data API de Supabase. Las validaciones de correo, nombre de usuario y contrasena estan en la API.
 
-En Render se usa la **conexión directa**: es la recomendada por Supabase para
-contenedores persistentes. Copiar desde **Connect > Direct connection** el host
-`db.<project-ref>.supabase.co`, puerto **5432** y usuario `postgres`.
-El `render.yaml` ya contiene el host y usuario de este proyecto; solo la
-contraseña sigue siendo una variable de Render. Para una máquina local IPv4,
-puede mantenerse el Session pooler configurado en `.env`.
+Render Free no dispone de la ruta IPv6 requerida por la conexión directa de
+Supabase. Por eso este proyecto usa **Connect > Session pooler**, que ofrece
+acceso IPv4 por el puerto **5432**. El `render.yaml` ya contiene el host y
+usuario del pooler; solo la contraseña sigue siendo una variable de Render.
+Se usa el JDBC generado por Supabase sin forzar un modo TLS adicional.
 
 ## 2. Publicar la API en Render
 
@@ -48,8 +47,8 @@ desplegará: `https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow`.
 
 | Variable | Valor |
 |---|---|
-| `DB_URL` | Lo define `render.yaml` con la conexión directa de Supabase |
-| `DB_USERNAME` | Lo define `render.yaml` como `postgres` |
+| `DB_URL` | Lo define `render.yaml` con el Session pooler de Supabase |
+| `DB_USERNAME` | Lo define `render.yaml` con el usuario del pooler |
 | `DB_PASSWORD` | Contraseña de PostgreSQL, no API key |
 | `JWT_SECRET` | Al menos 32 bytes aleatorios en Base64; generar como indica README.md |
 | `CORS_ALLOWED_ORIGINS` | URL HTTPS del frontend, por ejemplo `https://bookingnow-front.onrender.com` |
