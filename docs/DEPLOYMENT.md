@@ -91,16 +91,16 @@ Usar datos ficticios mientras se define el modelo final.
 
 ## Prueba local con Supabase
 
-Copiar `.env.example` a `.env`, completar los valores y ejecutar:
+Para este proyecto académico, `.env` ya está incluido en el repositorio y Spring
+Boot lo carga automáticamente. Desde la raíz, ejecutar:
 
 ```powershell
-docker compose -f compose.cloud.yaml up --build -d
+.\mvnw.cmd spring-boot:run
 ```
 
-`.env` está excluido de Git. Este Compose ejecuta solo la API, con límite de
-512 MB. `compose.yaml` queda como alternativa local con PostgreSQL incluido.
-Spring Boot por sí solo no lee `.env`: sin Compose, definir las variables de
-entorno en la terminal antes de ejecutar el JAR.
+También puedes usar `docker compose -f compose.cloud.yaml up --build -d`. Este
+Compose ejecuta solo la API, con límite de 512 MB. `compose.yaml` queda como
+alternativa local con PostgreSQL incluido.
 
 ## Referencias
 
@@ -111,12 +111,12 @@ entorno en la terminal antes de ejecutar el JAR.
 Render Free se suspende tras inactividad y tiene cuotas mensuales. Antes de una
 entrega, comprobar que tanto la API como el proyecto Supabase estén activos.
 
-## Cambio del modelo de cuentas
+## Modelo de cuentas
 
-El modulo Usuario fue reemplazado por Cliente y Proveedor. Si ya existe una tabla
-`usuarios`, no se elimina ni se convierten sus datos automaticamente: faltan
-nombre de usuario y credenciales para migrarlos. Coordinar esa migracion desde
-el repositorio de BD. El perfil cloud requiere las seis tablas del contrato del Sprint 1.
+Cliente y Proveedor son cuentas independientes. La tabla `usuarios` contiene,
+por ahora, solo cuentas con rol `ADMINISTRADOR`. El perfil cloud requiere las
+tablas del contrato del Sprint 1, incluido el administrador creado por
+`db/initial-admin.sql`.
 
 Los JWT siguen validos tras reinicios si JWT_SECRET no cambia y la cuenta existe y está ACTIVA.
 Los tokens vencen a los 30 minutos por defecto; el frontend debe descartarlos al
