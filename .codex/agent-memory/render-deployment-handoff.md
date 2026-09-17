@@ -140,3 +140,17 @@ git status --short
 - No borrar datos ni regenerar secretos.
 - `workspace/` es local y no debe subirse a Git.
 - Mantener arquitectura hexagonal; esta investigación solo afecta infraestructura y configuración de despliegue.
+
+## Actualizacion posterior: resultado de la prueba aislada
+
+El despliegue aislado `dep-dam0cpajnfac73crcf5g` finalmente si alcanzo a atender solicitudes HTTP. Render comenzo a consultar `/health` y lo repitio al recibir error. Por la inicializacion diferida, la primera solicitud intenta crear `SecurityFilterChain` y el `JwtDecoder`. `JwtConfig` necesita `ClienteRepositoryAdapter`, el cual necesita `ClienteJpaRepository`.
+
+La prueba temporal excluia los repositorios JPA, por eso cada comprobacion fallaba con:
+
+```text
+No qualifying bean of type '...ClienteJpaRepository' available
+```
+
+Esto explica las excepciones repetidas: son reintentos del health check de Render ante un perfil temporal inconsistente, no reintentos de Hikari ni evidencia nueva de un fallo de Supabase. El commit de esa prueba (`4fb8c87`) ya fue revertido por `de29ddb`; la rama `main` actual vuelve a incluir JPA. El despliegue temporal se canceló desde Render el 2026-09-17.
+
+No usar el perfil que excluye JPA como prueba de conectividad. La próxima prueba debe hacerse con la aplicación completa y, si es necesario aislar `/health`, configurar un health check que no fuerce la seguridad/JWT ni eliminar repositorios requeridos por esa configuración.
