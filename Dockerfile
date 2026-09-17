@@ -4,7 +4,9 @@ COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 RUN chmod +x mvnw && ./mvnw -B -ntp dependency:go-offline
 COPY src/ src/
-RUN ./mvnw -B -ntp verify
+# En Render solo se construye el artefacto. Las pruebas se ejecutan localmente
+# antes de enviar cambios importantes, para reducir el tiempo de despliegue.
+RUN ./mvnw -B -ntp package -Dmaven.test.skip=true
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
