@@ -20,11 +20,11 @@ public class ServicioRepositoryAdapter implements ServicioRepositoryPort {
         entity.setDuracionMinutos(dato.duracionMinutos());
         entity.setPrecio(dato.precio());
         entity.setDescripcion(dato.descripcion());
-        entity.setImagenReferencia(dato.imagenReferencia());
+        entity.setImagenReferenciaBase64(dato.imagenReferenciaBase64());
         entity.setEstado(dato.estado());
         entity.setFechaRegistro(dato.fechaRegistro());
         return toDomain(repository.saveAndFlush(entity));
     }
     public List<Servicio> listarPorNegocio(Long id) { return repository.findByNegocioIdNegocioOrderByIdServicioAsc(id).stream().map(this::toDomain).toList(); }
-    private Servicio toDomain(ServicioJpaEntity e) { return new Servicio(e.getIdServicio(), e.getNegocio() .getIdNegocio(), e.getNombre(), e.getDuracionMinutos(), e.getPrecio(), e.getDescripcion(), e.getImagenReferencia(), e.getEstado(), e.getFechaRegistro()); }
+    private Servicio toDomain(ServicioJpaEntity e) { return new Servicio(e.getIdServicio(), e.getNegocio() .getIdNegocio(), e.getNombre(), e.getDuracionMinutos(), e.getPrecio(), e.getDescripcion(), e.getImagenReferenciaBase64(), e.getEstado(), e.getFechaRegistro()); }
 }

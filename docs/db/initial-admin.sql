@@ -51,29 +51,29 @@ INSERT INTO bookingnow.correos_registrados (correo, tipo)
 SELECT correo, 'PROVEEDOR' FROM bookingnow.proveedores WHERE correo = 'proveedor.demo@bookingnow.local'
 ON CONFLICT (correo) DO NOTHING;
 
-INSERT INTO bookingnow.negocios (id_proveedor, nombre, correo, num_contacto, direccion, categoria, modalidad_virtual, foto_principal, fecha_registro)
+INSERT INTO bookingnow.negocios (id_proveedor, nombre, correo, num_contacto, direccion, categoria, modalidad_virtual, foto_principal_base64, fecha_registro)
 SELECT p.id_proveedor, 'Negocio Demo', 'negocio.demo@bookingnow.local', '+57 3001234567',
-       'Calle 10 # 20-30, Medellín', 'Bienestar', false, 'https://images.example.com/negocio-demo.jpg', CURRENT_TIMESTAMP
+       'Calle 10 # 20-30, Medellín', 'Bienestar', false, 'data:image/png;base64,iVBORw0KGgo=', CURRENT_TIMESTAMP
 FROM bookingnow.proveedores p
 WHERE p.correo = 'proveedor.demo@bookingnow.local'
 ON CONFLICT (id_proveedor) DO NOTHING;
 
-INSERT INTO bookingnow.negocio_multimedia (id_negocio, url, tipo, orden)
-SELECT n.id_negocio, 'https://images.example.com/negocio-demo-1.jpg', 'IMAGEN', 0
+INSERT INTO bookingnow.negocio_multimedia (id_negocio, contenido_base64, tipo, orden)
+SELECT n.id_negocio, 'data:image/png;base64,iVBORw0KGgo=', 'IMAGEN', 0
 FROM bookingnow.negocios n
 JOIN bookingnow.proveedores p ON p.id_proveedor = n.id_proveedor
 WHERE p.correo = 'proveedor.demo@bookingnow.local'
 ON CONFLICT (id_negocio, orden) DO NOTHING;
-INSERT INTO bookingnow.negocio_multimedia (id_negocio, url, tipo, orden)
-SELECT n.id_negocio, 'https://images.example.com/negocio-demo-video.mp4', 'VIDEO', 1
+INSERT INTO bookingnow.negocio_multimedia (id_negocio, contenido_base64, tipo, orden)
+SELECT n.id_negocio, 'data:video/mp4;base64,AAAA', 'VIDEO', 1
 FROM bookingnow.negocios n
 JOIN bookingnow.proveedores p ON p.id_proveedor = n.id_proveedor
 WHERE p.correo = 'proveedor.demo@bookingnow.local'
 ON CONFLICT (id_negocio, orden) DO NOTHING;
 
-INSERT INTO bookingnow.servicios (id_negocio, nombre, duracion_minutos, precio, descripcion, imagen_referencia, estado, fecha_registro)
+INSERT INTO bookingnow.servicios (id_negocio, nombre, duracion_minutos, precio, descripcion, imagen_referencia_base64, estado, fecha_registro)
 SELECT n.id_negocio, 'Asesoría inicial', 30, 25000.00, 'Sesión inicial de asesoría.',
-       'https://images.example.com/asesoria-inicial.jpg', 'ACTIVO', CURRENT_TIMESTAMP
+       'data:image/png;base64,iVBORw0KGgo=', 'ACTIVO', CURRENT_TIMESTAMP
 FROM bookingnow.negocios n
 JOIN bookingnow.proveedores p ON p.id_proveedor = n.id_proveedor
 WHERE p.correo = 'proveedor.demo@bookingnow.local'

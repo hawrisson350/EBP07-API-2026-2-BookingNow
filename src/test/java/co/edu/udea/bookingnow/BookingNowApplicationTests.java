@@ -24,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 class BookingNowApplicationTests {
+    private static final String IMAGEN_BASE64 = "data:image/png;base64,iVBORw0KGgo=";
+    private static final String VIDEO_BASE64 = "data:video/mp4;base64,AAAA";
     @LocalServerPort private int port;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private JwtEncoder encoder;
@@ -60,8 +62,8 @@ class BookingNowApplicationTests {
         body.put("nombre", "Consultorio Demo"); body.put("correo", "negocio@example.com"); body.put("numContacto", "+57 3001234567");
         body.put("categoria", "Consultoria"); body.put("modalidadVirtual", virtual);
         if (!virtual) body.put("direccion", "Calle 10 # 20-30");
-        body.put("fotoPrincipal", "https://example.com/portada.jpg");
-        body.put("galeria", List.of(Map.of("url","https://example.com/foto.jpg","tipo","IMAGEN"), Map.of("url","https://example.com/video.mp4","tipo","VIDEO")));
+        body.put("fotoPrincipalBase64", IMAGEN_BASE64);
+        body.put("galeria", List.of(Map.of("base64",IMAGEN_BASE64,"tipo","IMAGEN"), Map.of("base64",VIDEO_BASE64,"tipo","VIDEO")));
         return body;
     }
     private long crearNegocio(Cuenta c) throws Exception {
@@ -70,7 +72,7 @@ class BookingNowApplicationTests {
     }
     private Map<String,Object> servicio() {
         return new LinkedHashMap<>(Map.of("nombre","Asesoria","duracionMinutos",30,"precio",new java.math.BigDecimal("20.50"),
-                "descripcion","Asesoria inicial","imagenReferencia","https://example.com/servicio.jpg"));
+                "descripcion","Asesoria inicial","imagenReferenciaBase64",IMAGEN_BASE64));
     }
 
     @ParameterizedTest @ValueSource(booleans={false,true})
@@ -198,16 +200,17 @@ class BookingNowApplicationTests {
         }
     }
 
-    @Test void negocioVirtualGaleriaYUnicoProveedor() throws Exception {
+    @Test void negocioVirtualGaleriaYMultiplesNegociosProveedor() throws Exception {
         var c=cuenta(true);
-        assertThat(json(req("GET","/api/negocios/mio",null,c.token())).get("puedeRegistrar").asBoolean()).isTrue();
+        assertThat(json(req("GET","/api/negocios/mio",null,c.token())).get("negocios").size()).isZero();
         var r=req("POST","/api/negocios",negocio(true),c.token());assertThat(r.statusCode()).isEqualTo(201);
         assertThat(json(r).get("mensaje").asText()).contains("creado exitosamente");
         var datos=json(r).get("datos");assertThat(datos.get("idProveedor").asLong()).isEqualTo(c.id());
         assertThat(datos.get("direccion").isNull()).isTrue();assertThat(datos.get("galeria").size()).isEqualTo(2);
         var mio=json(req("GET","/api/negocios/mio",null,c.token()));
-        assertThat(mio.get("puedeRegistrar").asBoolean()).isFalse();assertThat(mio.get("negocio").get("galeria").size()).isEqualTo(2);
-        assertThat(req("POST","/api/negocios",negocio(true),c.token()).statusCode()).isEqualTo(409);
+        assertThat(mio.get("negocios").size()).isEqualTo(1);assertThat(mio.get("negocios").get(0).get("galeria").size()).isEqualTo(2);
+        assertThat(req("POST","/api/negocios",negocio(true),c.token()).statusCode()).isEqualTo(201);
+        assertThat(json(req("GET","/api/negocios/mio",null,c.token())).get("negocios").size()).isEqualTo(2);
     }
 
     @Test void negocioValidaObligatoriosFormatosYPermisos() throws Exception {
@@ -217,10 +220,10 @@ class BookingNowApplicationTests {
         var vacio=req("POST","/api/negocios",Map.of(),p.token());assertThat(vacio.statusCode()).isEqualTo(400);
         assertThat(json(vacio).get("campos").has("nombre")).isTrue();
         var body=negocio(false);body.remove("direccion");assertThat(req("POST","/api/negocios",body,p.token()).statusCode()).isEqualTo(400);
-        for(var entry:Map.of("correo","invalido","numContacto","abc","fotoPrincipal","javascript:alert(1)").entrySet()) {
+        for(var entry:Map.of("correo","invalido","numContacto","abc","fotoPrincipalBase64","data:image/svg+xml;base64,PHN2Zz4=").entrySet()) {
             body=negocio(true);body.put(entry.getKey(),entry.getValue());assertThat(req("POST","/api/negocios",body,p.token()).statusCode()).isEqualTo(400);
         }
-        body=negocio(true);body.put("galeria",List.of(Map.of("url","https://example.com/a","tipo","OTRO")));
+        body=negocio(true);body.put("galeria",List.of(Map.of("base64",IMAGEN_BASE64,"tipo","OTRO")));
         assertThat(req("POST","/api/negocios",body,p.token()).statusCode()).isEqualTo(400);
         assertThat(req("POST","/api/negocios",negocio(false),p.token()).statusCode()).isEqualTo(201);
     }
@@ -230,7 +233,7 @@ class BookingNowApplicationTests {
         var body=servicio();body.put("precio",0);var r=req("POST",ruta,body,c.token());
         assertThat(r.statusCode()).isEqualTo(201);var datos=json(r).get("datos");
         assertThat(datos.get("idNegocio").asLong()).isEqualTo(id);assertThat(datos.get("estado").asText()).isEqualTo("ACTIVO");
-        assertThat(datos.get("imagenReferencia").asText()).isEqualTo(body.get("imagenReferencia"));
+        assertThat(datos.get("imagenReferenciaBase64").asText()).isEqualTo(body.get("imagenReferenciaBase64"));
         var lista=req("GET",ruta,null,c.token());assertThat(lista.statusCode()).isEqualTo(200);assertThat(json(lista).size()).isEqualTo(1);
     }
 
@@ -250,11 +253,13 @@ class BookingNowApplicationTests {
         for(String precio:List.of("-1","0.001","10000000000")) {
             var body=servicio();body.put("precio",new java.math.BigDecimal(precio));assertThat(req("POST",ruta,body,c.token()).statusCode()).isEqualTo(400);
         }
-        var body=servicio();body.put("imagenReferencia","http://example.com/no-seguro.jpg");assertThat(req("POST",ruta,body,c.token()).statusCode()).isEqualTo(400);
+        var body=servicio();body.put("imagenReferenciaBase64","data:image/svg+xml;base64,PHN2Zz4=");assertThat(req("POST",ruta,body,c.token()).statusCode()).isEqualTo(400);
+        String masDeCincoMb = "data:image/png;base64," + Base64.getEncoder().encodeToString(new byte[5 * 1024 * 1024 + 1]);
+        body=servicio();body.put("imagenReferenciaBase64", masDeCincoMb);assertThat(req("POST",ruta,body,c.token()).statusCode()).isEqualTo(400);
         assertThat(json(req("GET",ruta,null,c.token())).size()).isZero();
     }
 
-    @Test void concurrenciaCorreoYNegocioMantienenUnicidad() throws Exception {
+    @Test void concurrenciaCorreoYNegocioPermiteMultiples() throws Exception {
         var a=registro(false);var b=registro(true);b.put("correo",a.get("correo"));
         try(var executor=Executors.newFixedThreadPool(2)) {
             var gate=new CountDownLatch(1);
@@ -268,8 +273,8 @@ class BookingNowApplicationTests {
             var c=cuenta(true);var start=new CountDownLatch(1);
             var n1=executor.submit(() -> {start.await();return req("POST","/api/negocios",negocio(true),c.token()).statusCode();});
             var n2=executor.submit(() -> {start.await();return req("POST","/api/negocios",negocio(true),c.token()).statusCode();});
-            start.countDown();assertThat(List.of(n1.get(),n2.get())).containsExactlyInAnyOrder(201,409);
-            assertThat(jdbc.queryForObject("select count(*) from negocios where id_proveedor=?",Integer.class,c.id())).isEqualTo(1);
+            start.countDown();assertThat(List.of(n1.get(),n2.get())).containsExactlyInAnyOrder(201,201);
+            assertThat(jdbc.queryForObject("select count(*) from negocios where id_proveedor=?",Integer.class,c.id())).isEqualTo(2);
         }
     }
 

@@ -24,7 +24,7 @@ public class ServicioService implements RegistrarServicioUseCase, ListarServicio
         if (c.duracionMinutos() == null || c.duracionMinutos() <= 0) { v.error("duracionMinutos", "Debe ser un entero mayor a cero"); }
         if (c.precio() == null || c.precio().signum() < 0 || c.precio().compareTo(new java.math.BigDecimal("9999999999.99")) > 0
                 || c.precio().stripTrailingZeros().scale() > 2) { v.error("precio", "Debe estar entre 0 y 9999999999.99 con hasta dos decimales"); }
-        String imagen = v.url(c.imagenReferencia(), "imagenReferencia");
+        String imagen = v.base64(c.imagenReferenciaBase64(), "imagenReferenciaBase64", "IMAGEN");
         v.terminar();
         return servicios.guardar(new Servicio(null, negocioId, nombre, c.duracionMinutos(), c.precio(),
                 descripcion, imagen, "ACTIVO", Instant.now()));

@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 public class NegocioJpaEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idNegocio;
-    @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "id_proveedor", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "id_proveedor", nullable = false)
     private ProveedorJpaEntity proveedor;
     @Column(nullable = false)
     private String nombre;
@@ -19,8 +19,8 @@ public class NegocioJpaEntity {
     private String categoria;
     @Column(nullable = false)
     private boolean modalidadVirtual;
-    @Column(length = 2048)
-    private String fotoPrincipal;
+    @Column(name = "foto_principal_base64", columnDefinition = "text")
+    private String fotoPrincipalBase64;
     @Column(nullable = false)
     private java.time.Instant fechaRegistro;
     @ElementCollection @CollectionTable(name = "negocio_multimedia", joinColumns = @JoinColumn(name = "id_negocio")) @OrderBy("orden ASC")
@@ -41,8 +41,8 @@ public class NegocioJpaEntity {
     public void setCategoria(String valor) { this.categoria = valor; }
     public boolean getModalidadVirtual() { return modalidadVirtual; }
     public void setModalidadVirtual(boolean valor) { this.modalidadVirtual = valor; }
-    public String getFotoPrincipal() { return fotoPrincipal; }
-    public void setFotoPrincipal(String valor) { this.fotoPrincipal = valor; }
+    public String getFotoPrincipalBase64() { return fotoPrincipalBase64; }
+    public void setFotoPrincipalBase64(String valor) { this.fotoPrincipalBase64 = valor; }
     public java.time.Instant getFechaRegistro() { return fechaRegistro; }
     public void setFechaRegistro(java.time.Instant valor) { this.fechaRegistro = valor; }
     public java.util.List<MultimediaJpaValue> getGaleria() { return galeria; }

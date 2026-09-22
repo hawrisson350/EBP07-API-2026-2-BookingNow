@@ -5,6 +5,6 @@ import java.util.Optional;
 public interface NegocioRepositoryPort {
     Negocio guardar(Negocio negocio);
     List<Negocio> obtenerTodos();
-    Optional<Negocio> obtenerPorProveedor(Long idProveedor);
+    List<Negocio> obtenerPorProveedor(Long idProveedor);
     Optional<Negocio> obtenerPorId(Long idNegocio);
 }

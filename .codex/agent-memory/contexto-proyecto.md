@@ -29,7 +29,10 @@ El 2026-09-17 se incorporó `workspace/Recuento HU.docx` a las cinco fichas de
 - Login incluye cuentas inactivas/bloqueadas y resultado en máximo tres segundos.
 - Negocio incluye modalidad virtual y galería multimedia: no excluir Multimedia
   del sprint por la lectura previa de solo los títulos.
-- El usuario confirmó un único negocio por proveedor durante este sprint (2026-09-17).
+- Desde 2026-09-21 un proveedor puede registrar varios negocios. `GET /api/negocios/mio`
+  devuelve la lista de negocios del proveedor autenticado.
+- Desde 2026-09-21 las fotos y la galería se reciben como data URLs Base64 en JSON;
+  no se cargan archivos y cada elemento está limitado a 5 MiB sin codificar.
 - Backend de las cinco HU implementado; 18 pruebas aprobadas con H2. Ver
   `stories/implementation/SPRINT-1.md` y `stories/testing/SPRINT-1-testing.md`.
 - Login común por correo en `/api/auth/login`; roles CLIENTE y PROVEEDOR.

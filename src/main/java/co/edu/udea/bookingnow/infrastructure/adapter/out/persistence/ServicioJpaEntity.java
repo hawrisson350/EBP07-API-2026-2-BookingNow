@@ -15,8 +15,8 @@ public class ServicioJpaEntity {
     private java.math.BigDecimal precio;
     @Column(nullable = false, length = 2000)
     private String descripcion;
-    @Column(length = 2048)
-    private String imagenReferencia;
+    @Column(name = "imagen_referencia_base64", columnDefinition = "text")
+    private String imagenReferenciaBase64;
     @Column(nullable = false, length = 16)
     private String estado;
     @Column(nullable = false)
@@ -33,8 +33,8 @@ public class ServicioJpaEntity {
     public void setPrecio(java.math.BigDecimal valor) { this.precio = valor; }
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String valor) { this.descripcion = valor; }
-    public String getImagenReferencia() { return imagenReferencia; }
-    public void setImagenReferencia(String valor) { this.imagenReferencia = valor; }
+    public String getImagenReferenciaBase64() { return imagenReferenciaBase64; }
+    public void setImagenReferenciaBase64(String valor) { this.imagenReferenciaBase64 = valor; }
     public String getEstado() { return estado; }
     public void setEstado(String valor) { this.estado = valor; }
     public java.time.Instant getFechaRegistro() { return fechaRegistro; }

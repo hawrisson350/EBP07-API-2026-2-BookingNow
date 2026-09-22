@@ -129,7 +129,7 @@ Authorization: Bearer EL_TOKEN_DEL_LOGIN
 | GET | `/api/clientes` | Administrador | Listar clientes |
 | GET | `/api/proveedores` | Administrador | Listar proveedores |
 | GET | `/api/negocios` | Administrador | Listar todos los negocios |
-| GET | `/api/negocios/mio` | Proveedor | Ver el negocio propio y si puede crear uno |
+| GET | `/api/negocios/mio` | Proveedor | Listar los negocios propios |
 | POST | `/api/negocios` | Proveedor | Crear negocio |
 | GET | `/api/negocios/{idNegocio}/servicios` | Proveedor dueño o administrador | Listar servicios |
 | POST | `/api/negocios/{idNegocio}/servicios` | Proveedor dueño | Crear servicio |
@@ -194,20 +194,20 @@ Respuesta resumida:
 
 Nunca guardes ni muestres la contraseña después de hacer login.
 
-### Consultar mi negocio
+### Consultar mis negocios
 
 `GET /api/negocios/mio` con token de proveedor devuelve algo parecido a:
 
 ```json
 {
-  "puedeRegistrar": false,
-  "negocio": { "idNegocio": 1, "nombre": "Negocio Demo" }
+  "negocios": [
+    { "idNegocio": 1, "nombre": "Negocio Demo" }
+  ]
 }
 ```
 
-Si `puedeRegistrar` es `true`, muestra el formulario de negocio. Si es `false`,
-ocúltalo: cada proveedor tiene un solo negocio. Guarda `idNegocio` porque se usa
-para servicios.
+La lista puede estar vacía. Muestra la opción de crear negocio y permite elegir
+uno de la lista antes de consultar o crear sus servicios. Guarda cada `idNegocio`.
 
 ### Consultas del administrador
 
@@ -230,14 +230,16 @@ crear un negocio ni servicios.
   "direccion": "Calle 10 # 20-30",
   "categoria": "Bienestar",
   "modalidadVirtual": false,
-  "fotoPrincipal": "https://ejemplo.com/portada.jpg",
-  "galeria": [{ "url": "https://ejemplo.com/foto.jpg", "tipo": "IMAGEN" }]
+  "fotoPrincipalBase64": "data:image/png;base64,iVBORw0KGgo=",
+  "galeria": [{ "base64": "data:image/png;base64,iVBORw0KGgo=", "tipo": "IMAGEN" }]
 }
 ```
 
 Para negocio virtual usa `"modalidadVirtual": true`; entonces `direccion` puede
-omitirse. Foto y galería son opcionales. Por ahora son enlaces HTTPS, no archivos.
-Galería admite máximo 20 elementos `IMAGEN` o `VIDEO`.
+omitirse. Foto y galería son opcionales. El frontend convierte los archivos a
+**data URL Base64** y los envía dentro del JSON; la API no recibe `multipart/form-data`
+ni sube archivos. Cada imagen o video puede ocupar como máximo **5 MiB** antes de
+convertirlo a Base64. Galería admite máximo 20 elementos `IMAGEN` o `VIDEO`.
 
 ### Crear servicio
 
@@ -250,12 +252,12 @@ Galería admite máximo 20 elementos `IMAGEN` o `VIDEO`.
   "duracionMinutos": 30,
   "precio": 25000.00,
   "descripcion": "Sesión inicial de asesoría.",
-  "imagenReferencia": "https://ejemplo.com/asesoria.jpg"
+  "imagenReferenciaBase64": "data:image/png;base64,iVBORw0KGgo="
 }
 ```
 
 Duración: entero mayor que cero. Precio: cero o mayor, máximo dos decimales.
-Imagen: opcional, URL HTTPS.
+Imagen: opcional, data URL Base64 de JPEG, PNG, WebP o GIF, máximo 5 MiB.
 
 ## 7. Cómo tratar los errores
 
@@ -267,7 +269,7 @@ Imagen: opcional, URL HTTPS.
 | `401` | Credenciales o token inválido | Pedir login de nuevo |
 | `403` | No tiene permiso | Mostrar “No tienes permiso” |
 | `404` | El dato no existe | Mostrar aviso o volver atrás |
-| `409` | Dato repetido o segundo negocio | Mostrar el mensaje y no reenviar |
+| `409` | Dato repetido | Mostrar el mensaje y no reenviar |
 
 Ejemplo de error de validación:
 
@@ -294,8 +296,8 @@ El frontend valida para ayudar a la persona; la API valida de nuevo por segurida
 1. Crear las pantallas de registro de cliente y proveedor.
 2. Crear login y guardar token/rol.
 3. Redirigir según `cuenta.rol`.
-4. Para proveedor, pedir `GET /api/negocios/mio` al entrar.
-5. Con `idNegocio`, mostrar y crear servicios.
+4. Para proveedor, pedir `GET /api/negocios/mio` al entrar y mostrar su lista.
+5. Con el `idNegocio` elegido, mostrar y crear servicios.
 6. Para administrador, cargar los listados globales.
 7. Crear botón de cerrar sesión que borre `sessionStorage`.
 

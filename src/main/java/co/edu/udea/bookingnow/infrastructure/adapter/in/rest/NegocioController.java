@@ -16,15 +16,14 @@ public class NegocioController {
         this.registrar = registrar; this.obtener = obtener; this.listar = listar;
     }
     private Long id(Authentication auth) { return Long.valueOf(auth.getName().split(":")[1]); }
-    public record MiNegocioResponse(boolean puedeRegistrar, Negocio negocio) {}
+    public record MisNegociosResponse(java.util.List<Negocio> negocios) {}
     @GetMapping
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public java.util.List<Negocio> listar() { return listar.listar(); }
     @GetMapping("/mio")
     @PreAuthorize("authentication.name.startsWith('proveedor:')")
-    public MiNegocioResponse mio(Authentication auth) {
-        var negocio = obtener.obtenerMiNegocio(id(auth));
-        return new MiNegocioResponse(negocio.isEmpty(), negocio.orElse(null));
+    public MisNegociosResponse mio(Authentication auth) {
+        return new MisNegociosResponse(obtener.obtenerMisNegocios(id(auth)));
     }
     @PostMapping @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("authentication.name.startsWith('proveedor:')")
