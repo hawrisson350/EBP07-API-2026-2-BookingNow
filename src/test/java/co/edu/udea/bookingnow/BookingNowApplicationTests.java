@@ -246,8 +246,10 @@ class BookingNowApplicationTests {
         assertThat(servicioCreado.statusCode()).isEqualTo(201);
         assertThat(json(servicioCreado).get("datos").get("imagenReferenciaBase64").asText()).isEqualTo(imagen);
         assertThat(json(servicioCreado).get("datos").get("imagenReferencia").asText()).isEqualTo(imagen);
+        assertThat(json(servicioCreado).get("datos").get("imagen_referencia_base64").asText()).isEqualTo(imagen);
         var lista = json(req("GET", "/api/negocios/" + idNegocio + "/servicios", null, proveedor.token()));
         assertThat(lista.get(0).get("imagenReferencia").asText()).isEqualTo(imagen);
+        assertThat(lista.get(0).get("imagen_referencia_base64").asText()).isEqualTo(imagen);
     }
     @Test void servicioSeAsociaYListaConPrecioCero() throws Exception {
         var c=cuenta(true);long id=crearNegocio(c);String ruta="/api/negocios/"+id+"/servicios";
