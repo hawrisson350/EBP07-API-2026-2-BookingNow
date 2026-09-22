@@ -1,5 +1,6 @@
 FROM eclipse-temurin:21-jdk AS build
 WORKDIR /build
+ENV MAVEN_OPTS="-Xms64m -Xmx384m -XX:+UseSerialGC"
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 RUN chmod +x mvnw && ./mvnw -B -ntp dependency:go-offline
