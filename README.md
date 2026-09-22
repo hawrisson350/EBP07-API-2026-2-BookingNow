@@ -208,7 +208,7 @@ crear un negocio ni servicios.
 ```
 
 Para negocio virtual usa `"modalidadVirtual": true`; entonces `direccion` puede
-omitirse. Foto y galería son opcionales. El frontend convierte los archivos a
+omitirse. Foto y galería son opcionales. La API también acepta temporalmente `fotoPrincipal` como alias de `fotoPrincipalBase64`. El frontend convierte los archivos a
 **data URL Base64** y los envía dentro del JSON; la API no recibe `multipart/form-data`
 ni sube archivos. Cada imagen o video puede ocupar como máximo **5 MiB** antes de
 convertirlo a Base64. Galería admite máximo 20 elementos `IMAGEN` o `VIDEO`.
@@ -229,7 +229,7 @@ convertirlo a Base64. Galería admite máximo 20 elementos `IMAGEN` o `VIDEO`.
 ```
 
 Duración: entero mayor que cero. Precio: cero o mayor, máximo dos decimales.
-Imagen: opcional, data URL Base64 de JPEG, PNG, WebP o GIF, máximo 5 MiB.
+Imagen: opcional, data URL Base64 de JPEG, PNG, WebP o GIF, máximo 5 MiB. Para compatibilidad con React, la API también acepta `imagenReferencia` como alias de `imagenReferenciaBase64` y devuelve ambos nombres.
 
 ## 7. Cómo tratar los errores
 

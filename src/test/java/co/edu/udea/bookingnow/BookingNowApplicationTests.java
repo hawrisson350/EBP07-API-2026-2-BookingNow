@@ -228,6 +228,27 @@ class BookingNowApplicationTests {
         assertThat(req("POST","/api/negocios",negocio(false),p.token()).statusCode()).isEqualTo(201);
     }
 
+    @Test void aceptaAliasDeImagenDelFrontendReact() throws Exception {
+        var proveedor = cuenta(true);
+        var bodyNegocio = negocio(true);
+        String foto = (String) bodyNegocio.remove("fotoPrincipalBase64");
+        bodyNegocio.put("fotoPrincipal", foto);
+        var creado = req("POST", "/api/negocios", bodyNegocio, proveedor.token());
+        assertThat(creado.statusCode()).isEqualTo(201);
+        long idNegocio = json(creado).get("datos").get("idNegocio").asLong();
+        assertThat(json(creado).get("datos").get("fotoPrincipalBase64").asText()).isEqualTo(foto);
+        assertThat(json(creado).get("datos").get("fotoPrincipal").asText()).isEqualTo(foto);
+
+        var bodyServicio = servicio();
+        String imagen = (String) bodyServicio.remove("imagenReferenciaBase64");
+        bodyServicio.put("imagenReferencia", imagen);
+        var servicioCreado = req("POST", "/api/negocios/" + idNegocio + "/servicios", bodyServicio, proveedor.token());
+        assertThat(servicioCreado.statusCode()).isEqualTo(201);
+        assertThat(json(servicioCreado).get("datos").get("imagenReferenciaBase64").asText()).isEqualTo(imagen);
+        assertThat(json(servicioCreado).get("datos").get("imagenReferencia").asText()).isEqualTo(imagen);
+        var lista = json(req("GET", "/api/negocios/" + idNegocio + "/servicios", null, proveedor.token()));
+        assertThat(lista.get(0).get("imagenReferencia").asText()).isEqualTo(imagen);
+    }
     @Test void servicioSeAsociaYListaConPrecioCero() throws Exception {
         var c=cuenta(true);long id=crearNegocio(c);String ruta="/api/negocios/"+id+"/servicios";
         var body=servicio();body.put("precio",0);var r=req("POST",ruta,body,c.token());
