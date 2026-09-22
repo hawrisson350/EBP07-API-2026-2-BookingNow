@@ -9,8 +9,8 @@ Fuentes: README.md, pom.xml, src/ y conversaciones/requisitos del equipo.
 - Arquitectura hexagonal basada en el ejemplo de clase.
 - Puertos de entrada agrupados por entidad en `application/port/in`.
 - Dominio independiente de HTTP/JPA; controladores y persistencia en adaptadores.
-- PostgreSQL previsto en Supabase y API en Render; infraestructura preparada.
-  No afirmar que existe un despliegue remoto sin comprobarlo.
+- PostgreSQL en Supabase y API desplegada en una instancia EC2 de AWS.
+  URL actual: http://3.136.161.165:8080. Confirmar disponibilidad antes de usarla.
 - H2 solo en pruebas y demo local; no reemplaza la BD prevista.
 - Cliente, Proveedor y Usuario son modelos separados, sin herencia. Usuario se
   incorporó el 2026-09-17 exclusivamente para el rol ADMINISTRADOR.

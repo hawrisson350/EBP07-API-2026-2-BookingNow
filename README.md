@@ -15,24 +15,27 @@ envías y cómo usar el token recibido en el login.
 
 ## 1. Empieza por Swagger
 
-Con la API encendida, abre `http://localhost:8080/swagger-ui.html`.
+Con la API local encendida, abre `http://localhost:8080/swagger-ui.html`.
+
+Con la API publicada en AWS, abre `http://3.136.161.165:8080/swagger-ui.html`.
 
 Swagger sirve para probar la API sin construir todavía el frontend: eliges una
 ruta, escribes datos de ejemplo y pulsas **Execute**.
 
-La dirección base local es:
+Estas son las dos direcciones base que usa el frontend React:
 
-```text
-http://localhost:8080
-```
+| Ambiente | Dirección base de la API |
+|---|---|
+| Local, para desarrollar | `http://localhost:8080` |
+| Publicada en AWS (EC2) | `http://3.136.161.165:8080` |
 
-Cuando se publique en Render, se cambia únicamente esa dirección por la URL de
-Render. Las rutas, como `/api/auth/login`, seguirán siendo iguales.
+Las rutas son iguales en ambos ambientes. Por ejemplo, el login siempre es
+`/api/auth/login`. El frontend publicado está en
+`https://booking-now-theta.vercel.app/` y la API permite su origen mediante CORS.
 
-Si el frontend corre en `http://localhost:5173` (Vite), `:3000` (React) o `:4200`
-(Angular), la API ya permite esas direcciones. Para el dominio publicado del
-frontend, configurar `CORS_ALLOWED_ORIGINS` con su URL HTTPS antes de desplegar.
-
+> La URL pública actual de EC2 usa HTTP. Un frontend servido por Vercel con HTTPS
+> necesita exponer la API también por HTTPS mediante un dominio o proxy antes de
+> consumirla directamente desde el navegador.
 ## 2. Cuentas de desarrollo
 
 Después de ejecutar [initial-admin.sql](docs/db/initial-admin.sql) en Supabase,
@@ -66,43 +69,12 @@ sequenceDiagram
 El token dura 30 minutos. Si la API devuelve `401`, elimina el token y pide
 iniciar sesión otra vez.
 
-### Código JavaScript mínimo
-
-```js
-const API = 'http://localhost:8080';
-
-async function iniciarSesion(correo, contrasena) {
-  const respuesta = await fetch(`${API}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ correo, contrasena })
-  });
-
-  const datos = await respuesta.json();
-  if (!respuesta.ok) throw new Error(datos.detail);
-
-  sessionStorage.setItem('token', datos.accessToken);
-  sessionStorage.setItem('rol', datos.cuenta.rol);
-  return datos.cuenta;
-}
-
-function encabezadosConToken() {
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${sessionStorage.getItem('token')}`
-  };
-}
-```
-
-Para cerrar sesión, borra `token` y `rol` de `sessionStorage`. El campo visual
-de contraseña debe usar `type="password"`.
-
 ## 4. Qué puede hacer cada rol
 
 | Rol del login | Pantallas o acciones permitidas |
 |---|---|
 | `CLIENTE` | Ver su propia cuenta. Las reservas llegarán en otro sprint. |
-| `PROVEEDOR` | Ver su cuenta, crear un único negocio y gestionar sus servicios. |
+| `PROVEEDOR` | Ver su cuenta, crear sus negocios y gestionar sus servicios. |
 | `ADMINISTRADOR` | Consultar clientes, proveedores, negocios y los servicios de cada negocio. |
 
 Usa `cuenta.rol` para mostrar las opciones correctas. La API también revisa los
@@ -323,37 +295,26 @@ No necesitas escribir variables de entorno: abre PowerShell en la raíz y ejecut
 ```
 
 El archivo activa el perfil `cloud`, que usa Supabase y valida las tablas ya
-creadas. Para Docker, Render y detalles de Supabase consulta [DEPLOYMENT.md](docs/DEPLOYMENT.md).
+creadas.
 
+### API publicada en AWS
+
+La API se ejecuta en una instancia **EC2** de AWS. Su dirección actual es:
+
+```text
+http://3.136.161.165:8080
+```
+
+El frontend React debe usar esa dirección como base de la API al estar publicado.
 ## 10. Si algo falla: cómo leer los logs
 
 En cada respuesta la API devuelve el encabezado `X-Request-Id`. Si el frontend
-envía uno válido, la API conserva ese mismo valor. Esto permite relacionar un
-error que ve una persona con una línea específica en los logs de Render.
+incluye uno válido, la API conserva ese mismo valor. Compártelo con backend al
+reportar un error: permite encontrar la solicitud exacta en los logs de AWS.
 
-```js
-const respuesta = await fetch(`${API}/api/auth/login`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json', 'X-Request-Id': crypto.randomUUID() },
-  body: JSON.stringify({ correo, contrasena })
-});
-
-console.log(respuesta.headers.get('X-Request-Id'));
-```
-
-En Render abre el servicio, entra a **Logs** y busca ese identificador. Verás
-líneas como estas:
-
-```text
-http_request method=POST path=/api/auth/login status=401 duration_ms=...
-login tipo_detectado=ADMINISTRADOR
-admin_login result=contrasena_incorrecta id_usuario=...
-```
-
-Los logs nunca incluyen contraseñas, JWT, hashes ni el cuerpo de la petición.
-Para el administrador, los resultados posibles son `usuario_no_encontrado`,
-`contrasena_incorrecta`, `cuenta_no_habilitada` o `exitoso`.
-
+Para revisar los logs, el equipo de backend entra a la instancia EC2 por SSH y
+consulta la terminal o el servicio con el que ejecutó la API. Los logs nunca
+incluyen contraseñas, JWT, hashes ni el cuerpo de la petición.
 ## 11. Para quienes trabajen en backend
 
 ```text
