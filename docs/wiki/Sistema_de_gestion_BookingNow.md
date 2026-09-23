@@ -109,4 +109,3 @@ proveedor.
 ## Entrega del Sprint 1
 
 La documentación detallada, los mockups, diagramas, evidencias y anexos del primer sprint se encuentran en [Sprint_1.md](Sprint_1.md).
-
