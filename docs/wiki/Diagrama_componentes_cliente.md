@@ -8,91 +8,75 @@ El diagrama describe únicamente el diseño interno de la entidad **Cliente**. M
 
 ## Diagrama
 
-> Mermaid no ofrece de forma nativa todas las figuras UML de componentes, como la pestaña de componente o el conector lollipop. Por ello, el diagrama usa estereotipos UML, figuras diferentes y dependencias punteadas para distinguir cada rol.
+El diagrama usa el nivel **C4 Component**. El rol de cada pieza de la arquitectura hexagonal se indica en el campo de tecnología: adaptador de entrada, puerto de entrada, servicio de aplicación, modelo de dominio, puerto de salida o adaptador de salida.
 
 ::: mermaid
-flowchart LR
-    subgraph entrada[Exterior del hexágono - entrada]
-        controller["«adapter in»<br/>ClienteController<br/>/api/clientes"]
-        dto[/"«DTO»<br/>RegistrarClienteCommand<br/>ClienteResponse"/]
-    end
+C4Component
+title Diagrama C4 de componentes - Cliente
 
-    subgraph nucleo[Hexágono - núcleo de aplicación]
-        direction TB
-        subgraph puertosIn[Puertos de entrada]
-            crear(["«port in · interface»<br/>CrearClienteUseCase"])
-            obtener(["«port in · interface»<br/>ObtenerClienteUseCase"])
-            listar(["«port in · interface»<br/>ObtenerClientesUseCase"])
-            eliminar(["«port in · interface»<br/>EliminarClienteUseCase"])
-        end
+Person_Ext(consumidor, "Consumidor REST", "Invoca las operaciones de Cliente")
 
-        servicio{{"«application service»<br/>ClienteService"}}
-        cliente[/"«entity»<br/>Cliente"/]
-        validaciones["«domain service»<br/>ValidacionCuenta<br/>ValidacionLogin"]
+Container_Boundary(api, "BookingNow API - diseño interno de Cliente") {
+    Component(dto, "RegistrarClienteCommand y ClienteResponse", "DTO REST", "Transportan datos entre HTTP y la aplicación")
+    Component(controller, "ClienteController", "Adaptador de entrada · Spring MVC", "Expone /api/clientes")
 
-        subgraph puertosOut[Puertos de salida]
-            clientePort(["«port out · interface»<br/>ClienteRepositoryPort"])
-            correoPort(["«port out · interface»<br/>CorreoRegistradoPort"])
-            contrasenaPort(["«port out · interface»<br/>ContrasenaPort"])
-        end
-    end
+    Component(crear, "CrearClienteUseCase", "Puerto de entrada · Interface", "Declara crearCliente")
+    Component(obtener, "ObtenerClienteUseCase", "Puerto de entrada · Interface", "Declara obtenerCliente")
+    Component(listar, "ObtenerClientesUseCase", "Puerto de entrada · Interface", "Declara obtenerClientes")
+    Component(eliminar, "EliminarClienteUseCase", "Puerto de entrada · Interface", "Declara eliminarCliente")
 
-    subgraph salida[Exterior del hexágono - salida]
-        clienteAdapter["«adapter out · repository»<br/>ClienteRepositoryAdapter"]
-        jpaRepository(["«repository interface»<br/>ClienteJpaRepository"])
-        jpaEntity[/"«persistence entity»<br/>ClienteJpaEntity"/]
-        correoAdapter["«adapter out»<br/>CorreoRegistradoAdapter"]
-        correoEntity[/"«persistence entity»<br/>CorreoRegistradoJpaEntity"/]
-        contrasenaAdapter["«adapter out»<br/>ContrasenaAdapter · BCrypt"]
-    end
+    Component(servicio, "ClienteService", "Servicio de aplicación", "Implementa casos de uso y aplica reglas")
+    Component(cliente, "Cliente", "Modelo de dominio", "Representa la cuenta cliente")
+    Component(validaciones, "ValidacionCuenta y ValidacionLogin", "Reglas de dominio", "Validan datos de cuenta y credenciales")
 
-    dto -->|solicitud/respuesta HTTP| controller
-    controller -. «depende de» .-> crear
-    controller -. «depende de» .-> obtener
-    controller -. «depende de» .-> listar
-    controller -. «depende de» .-> eliminar
+    Component(clientePort, "ClienteRepositoryPort", "Puerto de salida · Interface", "Contrato de persistencia de Cliente")
+    Component(correoPort, "CorreoRegistradoPort", "Puerto de salida · Interface", "Verifica correo único entre roles")
+    Component(contrasenaPort, "ContrasenaPort", "Puerto de salida · Interface", "Contrato para hash y comparación")
 
-    servicio -. «implementa» .-> crear
-    servicio -. «implementa» .-> obtener
-    servicio -. «implementa» .-> listar
-    servicio -. «implementa» .-> eliminar
-    servicio -->|crea, consulta y elimina| cliente
-    servicio -->|aplica reglas| validaciones
-    servicio -. «depende de» .-> clientePort
-    servicio -. «depende de» .-> correoPort
-    servicio -. «depende de» .-> contrasenaPort
+    Component(clienteAdapter, "ClienteRepositoryAdapter", "Adaptador de salida · Repository", "Implementa ClienteRepositoryPort")
+    Component(jpaRepository, "ClienteJpaRepository", "Interface JPA", "Operaciones JPA de ClienteJpaEntity")
+    Component(jpaEntity, "ClienteJpaEntity", "Entidad de persistencia", "Representación JPA de Cliente")
+    Component(correoAdapter, "CorreoRegistradoAdapter", "Adaptador de salida", "Implementa CorreoRegistradoPort")
+    Component(correoEntity, "CorreoRegistradoJpaEntity", "Entidad de persistencia", "Registro de correo y tipo de cuenta")
+    Component(contrasenaAdapter, "ContrasenaAdapter", "Adaptador de salida · BCrypt", "Codifica y compara contraseñas")
+}
 
-    clienteAdapter -. «implementa» .-> clientePort
-    correoAdapter -. «implementa» .-> correoPort
-    contrasenaAdapter -. «implementa» .-> contrasenaPort
-    clienteAdapter -->|usa| jpaRepository
-    jpaRepository -->|gestiona| jpaEntity
-    clienteAdapter <-->|mapea| cliente
-    correoAdapter -->|consulta| correoEntity
+Rel(consumidor, controller, "Envía solicitud", "HTTP/JSON")
+Rel(dto, controller, "Entrega y recibe datos")
+Rel(controller, crear, "Depende de")
+Rel(controller, obtener, "Depende de")
+Rel(controller, listar, "Depende de")
+Rel(controller, eliminar, "Depende de")
+Rel(servicio, crear, "Implementa")
+Rel(servicio, obtener, "Implementa")
+Rel(servicio, listar, "Implementa")
+Rel(servicio, eliminar, "Implementa")
+Rel(servicio, cliente, "Crea, consulta y elimina")
+Rel(servicio, validaciones, "Aplica")
+Rel(servicio, clientePort, "Depende de")
+Rel(servicio, correoPort, "Depende de")
+Rel(servicio, contrasenaPort, "Depende de")
+Rel(clienteAdapter, clientePort, "Implementa")
+Rel(correoAdapter, correoPort, "Implementa")
+Rel(contrasenaAdapter, contrasenaPort, "Implementa")
+Rel(clienteAdapter, jpaRepository, "Usa")
+Rel(jpaRepository, jpaEntity, "Gestiona")
+Rel(clienteAdapter, cliente, "Mapea")
+Rel(correoAdapter, correoEntity, "Consulta")
 
-    classDef entry fill:#DBEAFE,stroke:#2563EB,color:#172554,stroke-width:2px
-    classDef port fill:#FEF3C7,stroke:#D97706,color:#78350F,stroke-width:2px,stroke-dasharray: 5 3
-    classDef service fill:#F3E8FF,stroke:#7E22CE,color:#581C87,stroke-width:3px
-    classDef domain fill:#FCE7F3,stroke:#DB2777,color:#831843,stroke-width:2px
-    classDef adapter fill:#DCFCE7,stroke:#16A34A,color:#14532D,stroke-width:2px
-    class controller,dto entry
-    class crear,obtener,listar,eliminar,clientePort,correoPort,contrasenaPort,jpaRepository port
-    class servicio service
-    class cliente,validaciones domain
-    class clienteAdapter,jpaEntity,correoAdapter,correoEntity,contrasenaAdapter adapter
+UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
 :::
 
-## Convención UML utilizada
+## Lectura C4 y arquitectura hexagonal
 
-| Notación | Significado |
+| Elemento C4 | Rol en BookingNow |
 |---|---|
-| Rectángulo azul | Adaptador de entrada o DTO REST. |
-| Óvalo amarillo punteado | Puerto: interfaz que separa la aplicación de sus dependencias. |
-| Hexágono morado | Servicio de aplicación que implementa casos de uso. |
-| Paralelogramo rosado | Modelo o regla del dominio. |
-| Rectángulo verde | Adaptador de salida o elemento de persistencia. |
-| Flecha punteada | Dependencia o relación de implementación. |
-| Flecha continua | Comunicación o uso en tiempo de ejecución. |
+| `Container_Boundary` | Delimita la API y todos los componentes internos que participan en Cliente. |
+| `Component` con tecnología **Adaptador de entrada** | `ClienteController` y DTOs que traducen HTTP al lenguaje de la aplicación. |
+| `Component` con tecnología **Puerto de entrada** | Interfaces de los casos de uso consumidas por el controlador. |
+| `Component` con tecnología **Servicio de aplicación** | `ClienteService`, que implementa los puertos de entrada y coordina el dominio. |
+| `Component` con tecnología **Puerto de salida** | Interfaces que protegen al núcleo de JPA y BCrypt. |
+| `Component` con tecnología **Adaptador de salida** | Implementaciones tecnológicas de los puertos de salida. |
 
 ## Comunicación de los casos de uso
 
