@@ -614,57 +614,31 @@ descripción, para tenerlo disponible en el sistema.
 ## Mockups
 
 ### Página de inicio
-Al abrir la aplicación, el usuario se encuentra con la página de
-inicio, desde donde tiene la posibilidad de iniciar sesión o
-registrarse, según si ya cuenta con una cuenta creada o si accede por
-primera vez.
+
+Al abrir la aplicación, el usuario encuentra la página de inicio, desde donde
+puede iniciar sesión o registrarse según cuente o no con una cuenta creada.
+
 ### Flujo de cliente
-Al ingresar como cliente sin una cuenta previa, el usuario tiene la
-posibilidad de registrarse, llenando los datos necesarios en el
-formulario correspondiente. Una vez completado el registro, el sistema
-notifica la creación exitosa de la cuenta. Con esta cuenta, el cliente
-accede al área que, para sprints posteriores, permitirá la búsqueda de
-negocios y sus servicios.
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image10.png" alt="Evidencia visual: image10.png" width="900">
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image9.png" alt="Evidencia visual: image9.png" width="900">
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image4.png" alt="Evidencia visual: image4.png" width="900">
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image3.png" alt="Evidencia visual: image3.png" width="900">
-</p>
+
+Al ingresar como cliente sin una cuenta previa, puede completar el registro y
+recibe la confirmación de creación. En los sprints posteriores, esta área
+permitirá buscar negocios y sus servicios.
+
+| Inicio y registro | Confirmación |
+|---|---|
+| <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image10.png" alt="Página de inicio" width="420"> | <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image9.png" alt="Registro de cliente" width="420"> |
+| <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image4.png" alt="Formulario de cliente" width="420"> | <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image3.png" alt="Confirmación de registro de cliente" width="420"> |
+
 ### Flujo de proveedor
-Al iniciar el sistema, el usuario se encuentra con la posibilidad de
-crear una cuenta o iniciar sesión. En caso de crear una nueva cuenta,
-debe llenar el formulario correspondiente con los datos solicitados;
-una vez registrados, el sistema notifica la creación exitosa y
-redirige nuevamente a la página inicial para que el usuario pueda
-iniciar sesión. Para este sprint, al iniciar sesión el proveedor tiene
-la posibilidad de registrar su negocio junto con los servicios
-asociados, especificando las características correspondientes de cada
-uno, con sus respectivas notificaciones de confirmación.
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image10.png" alt="Evidencia visual: image10.png" width="900">
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image8.png" alt="Evidencia visual: image8.png" width="900">
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image2.png" alt="Evidencia visual: image2.png" width="900">
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image1.png" alt="Evidencia visual: image1.png" width="900">
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image6.png" alt="Evidencia visual: image6.png" width="900">
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image5.png" alt="Evidencia visual: image5.png" width="900">
-</p>
+
+El proveedor puede crear una cuenta, iniciar sesión y registrar su negocio con
+los servicios asociados. Cada paso muestra su confirmación correspondiente.
+
+| Acceso y registro | Registro de negocio |
+|---|---|
+| <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image10.png" alt="Página de inicio" width="420"> | <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image8.png" alt="Registro de proveedor" width="420"> |
+| <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image2.png" alt="Formulario de proveedor" width="420"> | <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image1.png" alt="Registro de negocio" width="420"> |
+| <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image6.png" alt="Registro de servicio" width="420"> | <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image5.png" alt="Confirmación de servicio" width="420"> |
 
 ## Modelo de Dominio
 
