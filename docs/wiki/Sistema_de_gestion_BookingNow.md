@@ -4,11 +4,9 @@
 
 ### Sistema de gestión de reservas de servicios
 
-**Análisis y Diseño de Sistemas II**
-Universidad de Antioquia - Facultad de Ingeniería - Ingeniería de Sistemas
+**Análisis y Diseño de Sistemas II** Universidad de Antioquia - Facultad de Ingeniería - Ingeniería de Sistemas
 
-**Entrega formal — Sprint 1**
-Versión 0.1 - Septiembre de 2026
+**Entrega formal — Sprint 1** Versión 0.1 - Septiembre de 2026
 
 </div>
 
@@ -39,44 +37,17 @@ Versión 0.1 - Septiembre de 2026
 
 # Descripción general
 
-El presente proyecto propone el desarrollo de un sistema digital
-orientado a facilitar la gestión de reservas de servicios, con el
-propósito de optimizar los procesos administrativos asociados a la
-programación de citas y al control de disponibilidad de recursos.
+El presente proyecto propone el desarrollo de un sistema digital orientado a facilitar la gestión de reservas de servicios, con el propósito de optimizar los procesos administrativos asociados a la programación de citas y al control de disponibilidad de recursos.
 
-Negocios como clínicas, consultorios, salones de belleza y centros
-deportivos dependen en gran medida de sistemas de reservas eficientes
-para administrar su agenda y la disponibilidad de sus recursos. Sin
-embargo, la ausencia de herramientas adecuadas suele derivar en
-sobreocupación de horarios, cancelaciones desorganizadas y dificultades
-generales para la gestión de las agendas, afectando tanto la operación
-interna del negocio como la experiencia del cliente.
+Negocios como clínicas, consultorios, salones de belleza y centros deportivos dependen en gran medida de sistemas de reservas eficientes para administrar su agenda y la disponibilidad de sus recursos. Sin embargo, la ausencia de herramientas adecuadas suele derivar en sobreocupación de horarios, cancelaciones desorganizadas y dificultades generales para la gestión de las agendas, afectando tanto la operación interna del negocio como la experiencia del cliente.
 
-Frente a esta problemática dirigimos el sistema a dos tipos de usuarios
-principales: clientes **y** proveedores de servicios**.** Los clientes
-podrán registrarse en la plataforma, acceder a los distintos negocios
-disponibles, realizar reservas y consultar información relevante sobre
-los servicios ofrecidos. Por su parte, los proveedores podrán
-registrarse y establecer su propio negocio dentro del sistema, gestionar
-su agenda, controlar la disponibilidad de sus recursos, realizar
-seguimiento a las reservas registradas, recibir notificaciones sobre
-confirmaciones o cancelaciones, así como registrar a sus empleados y
-asignarlos a los servicios correspondientes.
+Frente a esta problemática dirigimos el sistema a dos tipos de usuarios principales: clientes **y** proveedores de servicios**.** Los clientes podrán registrarse en la plataforma, acceder a los distintos negocios disponibles, realizar reservas y consultar información relevante sobre los servicios ofrecidos. Por su parte, los proveedores podrán registrarse y establecer su propio negocio dentro del sistema, gestionar su agenda, controlar la disponibilidad de sus recursos, realizar seguimiento a las reservas registradas, recibir notificaciones sobre confirmaciones o cancelaciones, así como registrar a sus empleados y asignarlos a los servicios correspondientes.
 
-De esta manera, el sistema busca optimizar el proceso de agendamiento,
-eliminar conflictos en la asignación de citas y mejorar la organización
-del servicio, brindando así una experiencia ágil, confiable y autónoma
-tanto para los clientes como para los proveedores. Este desarrollo se
-enmarca dentro del valor agregado que representa para el negocio la
-optimización en el uso de recursos, la mejora en la experiencia del
-cliente y una mayor eficiencia en la gestión de las agendas.
+De esta manera, el sistema busca optimizar el proceso de agendamiento, eliminar conflictos en la asignación de citas y mejorar la organización del servicio, brindando así una experiencia ágil, confiable y autónoma tanto para los clientes como para los proveedores. Este desarrollo se enmarca dentro del valor agregado que representa para el negocio la optimización en el uso de recursos, la mejora en la experiencia del cliente y una mayor eficiencia en la gestión de las agendas.
 
 # Objetivo general
 
-Nuestro objetivo es desarrollar una plataforma digital que permita la
-administración integral en los procesos de reserva de servicios,
-optimización en la gestión de agendas, disponibilidad de recursos y la
-administración de negocios.
+Nuestro objetivo es desarrollar una plataforma digital que permita la administración integral en los procesos de reserva de servicios, optimización en la gestión de agendas, disponibilidad de recursos y la administración de negocios.
 
   ------------------------------------------------------------------------
   **N°**   Objetivo
@@ -115,25 +86,19 @@ administración de negocios.
 El alcance esperado del proyecto incluye:
 
 - Gestión de Usuarios: El proyecto contempla el registro, inicio de
-sesión, gestión y actualización de perfiles además de su recuperación
-para clientes y proveedores.
+sesión, gestión y actualización de perfiles además de su recuperación para clientes y proveedores.
 - Gestión de Negocios: El proyecto contempla el registro, consulta,
-edición, activación e inactivación de negocios al igual que su
-búsqueda y consulta de historial.
+edición, activación e inactivación de negocios al igual que su búsqueda y consulta de historial.
 - Gestión de Servicios: El proyecto contempla, consultar, editar y
-activación e inactivación de servicios además de la consulta del
-historial de servicios.
+activación e inactivación de servicios además de la consulta del historial de servicios.
 - Gestión de Recursos: El proyecto contempla el apartado para
-registrar recursos y asociarlos a servicios, consultar cantidades,
-detalles y búsqueda y gestión de su disponibilidad
+registrar recursos y asociarlos a servicios, consultar cantidades, detalles y búsqueda y gestión de su disponibilidad
 - Gestión de Reservas: El proyecto contempla el registro, modificación
 ,cancelación y consulta de historial de reservas.
 - Gestión de Empleados: El proyecto contempla el registro, consultar y
-buscar empleados, también su activación e inactivación, modificar
-horarios y asignaciones con verificación de disponibilidad.
+buscar empleados, también su activación e inactivación, modificar horarios y asignaciones con verificación de disponibilidad.
 - Gestión de Reportes: El proyecto contempla la consulta y filtrado de
-reservas, además de análisis de ocupaciones y uso de servicios,
-cancelaciones y extracción de reportes
+reservas, además de análisis de ocupaciones y uso de servicios, cancelaciones y extracción de reportes
 
 El proyecto no incluye:
 
@@ -146,8 +111,7 @@ proveedor.
 
 # Repositorio
 
-El código fuente y la documentación técnica se encuentran en el repositorio
-del proyecto: [BookingNow API en GitHub](https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow).
+El código fuente y la documentación técnica se encuentran en el repositorio del proyecto: [BookingNow API en GitHub](https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow).
 
 # Estado del proyecto
 

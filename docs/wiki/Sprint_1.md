@@ -5,49 +5,27 @@
 
 ## Objetivo
 
-El primer sprint tiene como objetivo establecer la infraestructura base
-del sistema mediante la implementación del registro y autenticación de
-usuarios según sus roles, así como el registro inicial de negocios y
-servicios, garantizando el almacenamiento de la información y la
-seguridad de la misma.
+El primer sprint tiene como objetivo establecer la infraestructura base del sistema mediante la implementación del registro y autenticación de usuarios según sus roles, así como el registro inicial de negocios y servicios, garantizando el almacenamiento de la información y la seguridad de la misma.
 
 ## Modelo verbal
 
 ### Descripción del problema
 
-Se identificó la falta de herramientas que permitan a negocios como
-clínicas, centros deportivos, salones de belleza y consultorios
-organizar de forma adecuada sus horarios, recursos, empleados y
-reportes. Esta carencia genera sobreocupación y desorden en las
-cancelaciones, afectando directamente la gestión de sus agendas y la
-calidad del servicio ofrecido .
+Se identificó la falta de herramientas que permitan a negocios como clínicas, centros deportivos, salones de belleza y consultorios organizar de forma adecuada sus horarios, recursos, empleados y reportes. Esta carencia genera sobreocupación y desorden en las cancelaciones, afectando directamente la gestión de sus agendas y la calidad del servicio ofrecido .
 
 ### Objetivo del sistema
 
-Con el fin de dar solución a esta problemática se desarrolló un sistema
-que permite a clientes y proveedores registrarse y acceder a interfaces
-diferenciadas según su rol, facilitando así la reservación y cancelación
-de servicios, la gestión de agendas y la consulta del historial de
-reservas. A los proveedores, el sistema les brinda la posibilidad de
-registrar su negocio y gestionar sus empleados, recursos, servicios,
-agendas y reportes de forma centralizada.
+Con el fin de dar solución a esta problemática se desarrolló un sistema que permite a clientes y proveedores registrarse y acceder a interfaces diferenciadas según su rol, facilitando así la reservación y cancelación de servicios, la gestión de agendas y la consulta del historial de reservas. A los proveedores, el sistema les brinda la posibilidad de registrar su negocio y gestionar sus empleados, recursos, servicios, agendas y reportes de forma centralizada.
 
 ### Alcance del sprint
 
-Para el primer sprint se espera Implementar las funcionalidades base de
-registro y autenticación de usuarios ; clientes y proveedores, así como
-el registro inicial de negocios y servicios, teniendo en cuenta la
-seguridad y escalabilidad el sistema sobre el cual se trabajará el los
-posteriores sprint
+Para el primer sprint se espera Implementar las funcionalidades base de registro y autenticación de usuarios ; clientes y proveedores, así como el registro inicial de negocios y servicios, teniendo en cuenta la seguridad y escalabilidad el sistema sobre el cual se trabajará el los posteriores sprint
 
 Incluye:
 
-**Backend:** lógica de autenticación,validaciones y el guardado en la
-base de datos de los registros de clientes, proveedores, negocios y
-servicios.
+**Backend:** lógica de autenticación,validaciones y el guardado en la base de datos de los registros de clientes, proveedores, negocios y servicios.
 
-**Frontend:** pantallas de registro de cliente, registro de proveedor,
-inicio de sesión, registro de negocio y registro de servicio.
+**Frontend:** pantallas de registro de cliente, registro de proveedor, inicio de sesión, registro de negocio y registro de servicio.
 
 No incluye:
 
@@ -65,74 +43,21 @@ No incluye:
 
 ### Actividades del usuario
 
-El proceso inicia cuando el usuario accede a la plataforma. En este
-punto, el sistema determina si el usuario cuenta con una cuenta
-registrada. En caso de no tenerla, el usuario debe registrarse
-seleccionando su rol: si se registra como cliente, debe ingresar su
-correo, nombre de usuario y contraseña; si se registra como proveedor,
-debe proporcionar su correo, razón social, NIT, usuario y contraseña.
-Si, por el contrario, el usuario ya cuenta con una cuenta, procede a
-iniciar sesión con su usuario y contraseña, teniendo además la
-posibilidad de recuperar su contraseña mediante un código en caso de
-haberla olvidado. Una vez autenticado, el sistema identifica el rol de
-la cuenta para dirigir al usuario hacia el flujo correspondiente, ya sea
-como cliente o como proveedor.
+El proceso inicia cuando el usuario accede a la plataforma. En este punto, el sistema determina si el usuario cuenta con una cuenta registrada. En caso de no tenerla, el usuario debe registrarse seleccionando su rol: si se registra como cliente, debe ingresar su correo, nombre de usuario y contraseña; si se registra como proveedor, debe proporcionar su correo, razón social, NIT, usuario y contraseña. Si, por el contrario, el usuario ya cuenta con una cuenta, procede a iniciar sesión con su usuario y contraseña, teniendo además la posibilidad de recuperar su contraseña mediante un código en caso de haberla olvidado. Una vez autenticado, el sistema identifica el rol de la cuenta para dirigir al usuario hacia el flujo correspondiente, ya sea como cliente o como proveedor.
 
-Dentro del flujo del cliente, el usuario tiene la posibilidad de
-actualizar su información personal en cualquier momento. Asimismo, puede
-buscar negocios o servicios de su interés: en el caso de los negocios,
-puede buscarlos por nombre y listar su información; en el caso de los
-servicios, puede realizar la misma búsqueda por nombre y consultar su
-información detallada. En cuanto a la gestión de reservas, el cliente
-puede registrar una nueva reserva indicando la fecha y hora deseadas, lo
-cual genera automáticamente la actualización de la disponibilidad del
-recurso correspondiente. También puede consultar el historial de sus
-reservas, actualizar la fecha y hora de una reserva existente, o
-cancelarla, acción que a su vez libera el recurso previamente asignado.
-A lo largo de este proceso, el cliente recibe notificaciones
-automáticas: una confirmación al registrar la reserva, un recordatorio
-previo a la fecha programada y una notificación en caso de cancelación.
-Finalmente, el cliente puede optar por cerrar sesión y salir de la
-plataforma.
+Dentro del flujo del cliente, el usuario tiene la posibilidad de actualizar su información personal en cualquier momento. Asimismo, puede buscar negocios o servicios de su interés: en el caso de los negocios, puede buscarlos por nombre y listar su información; en el caso de los servicios, puede realizar la misma búsqueda por nombre y consultar su información detallada. En cuanto a la gestión de reservas, el cliente puede registrar una nueva reserva indicando la fecha y hora deseadas, lo cual genera automáticamente la actualización de la disponibilidad del recurso correspondiente. También puede consultar el historial de sus reservas, actualizar la fecha y hora de una reserva existente, o cancelarla, acción que a su vez libera el recurso previamente asignado. A lo largo de este proceso, el cliente recibe notificaciones automáticas: una confirmación al registrar la reserva, un recordatorio previo a la fecha programada y una notificación en caso de cancelación. Finalmente, el cliente puede optar por cerrar sesión y salir de la plataforma.
 
-Para el proveedor, el sistema verifica primero si este cuenta con un
-negocio registrado. Si no lo tiene, debe registrarlo proporcionando el
-nombre, correo, número de contacto, dirección, categoría, foto principal
-y galería multimedia del negocio. Si ya cuenta con uno, puede editarlo,
-activarlo o desactivarlo, así como visualizar su historial. De manera
-similar, en cuanto a los servicios, si el proveedor no tiene un servicio
-registrado debe crearlo indicando el negocio asociado, el nombre, la
-imagen de referencia, la duración, el precio y la descripción del
-servicio; si ya cuenta con uno, puede editarlo, activarlo o
-desactivarlo, y consultar su historial.
+Para el proveedor, el sistema verifica primero si este cuenta con un negocio registrado. Si no lo tiene, debe registrarlo proporcionando el nombre, correo, número de contacto, dirección, categoría, foto principal y galería multimedia del negocio. Si ya cuenta con uno, puede editarlo, activarlo o desactivarlo, así como visualizar su historial. De manera similar, en cuanto a los servicios, si el proveedor no tiene un servicio registrado debe crearlo indicando el negocio asociado, el nombre, la imagen de referencia, la duración, el precio y la descripción del servicio; si ya cuenta con uno, puede editarlo, activarlo o desactivarlo, y consultar su historial.
 
-En la gestión de recursos, el proveedor puede registrar un nuevo recurso
-indicando su nombre y tipo, e ingresar la cantidad disponible, para
-luego asociarlo a un servicio específico. Además, puede consultar los
-recursos registrados, ver sus detalles, verificar su disponibilidad,
-actualizarla, liberar un recurso cuando corresponda, y buscar recursos
-puntuales.
+En la gestión de recursos, el proveedor puede registrar un nuevo recurso indicando su nombre y tipo, e ingresar la cantidad disponible, para luego asociarlo a un servicio específico. Además, puede consultar los recursos registrados, ver sus detalles, verificar su disponibilidad, actualizarla, liberar un recurso cuando corresponda, y buscar recursos puntuales.
 
-En cuanto a la gestión de empleados, el proveedor puede registrar nuevos
-empleados y asignarlos a los servicios que ofrece. También puede
-consultar la lista de empleados, ver el detalle de cada uno y realizar
-búsquedas específicas. Tiene la posibilidad de activar o desactivar
-empleados; en el caso de la desactivación, el sistema guarda
-automáticamente un historial de empleados inactivos. Adicionalmente, el
-proveedor puede definir y modificar los horarios de sus empleados, así
-como verificar su disponibilidad para la asignación a reservas.
+En cuanto a la gestión de empleados, el proveedor puede registrar nuevos empleados y asignarlos a los servicios que ofrece. También puede consultar la lista de empleados, ver el detalle de cada uno y realizar búsquedas específicas. Tiene la posibilidad de activar o desactivar empleados; en el caso de la desactivación, el sistema guarda automáticamente un historial de empleados inactivos. Adicionalmente, el proveedor puede definir y modificar los horarios de sus empleados, así como verificar su disponibilidad para la asignación a reservas.
 
-Finalmente, el proveedor cuenta con herramientas de consulta y análisis:
-puede consultar y filtrar las reservas registradas, analizar la
-ocupación y el uso de los servicios, analizar las cancelaciones
-ocurridas, y exportar reportes con esta información. Al concluir sus
-actividades, el proveedor también tiene la opción de cerrar sesión y
-finalizar su interacción con la plataforma.
+Finalmente, el proveedor cuenta con herramientas de consulta y análisis: puede consultar y filtrar las reservas registradas, analizar la ocupación y el uso de los servicios, analizar las cancelaciones ocurridas, y exportar reportes con esta información. Al concluir sus actividades, el proveedor también tiene la opción de cerrar sesión y finalizar su interacción con la plataforma.
 
 ### Historias asociadas
 
-Para mejor visualización del mapa correspondiente a la historia de
-usuario que se trabajarán por sprint acceder al anexo 1.
+Para mejor visualización del mapa correspondiente a la historia de usuario que se trabajarán por sprint acceder al anexo 1.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/media/image13.jpg" alt="User story map del proyecto" width="900">
@@ -140,8 +65,7 @@ usuario que se trabajarán por sprint acceder al anexo 1.
 
 **HU-10: Registrar negocio**
 
-Como proveedor quiero registrar mis negocios indicando su información,
-para publicar y gestionar mis servicios en la plataforma.
+Como proveedor quiero registrar mis negocios indicando su información, para publicar y gestionar mis servicios en la plataforma.
 
 **Criterios de aceptación:**
 
@@ -255,8 +179,7 @@ para publicar y gestionar mis servicios en la plataforma.
 
 **HU-06: Registrar cliente con correo y contraseña**
 
-Como usuario, quiero registrarme con un correo y contraseña, para crear
-una cuenta en el sistema.
+Como usuario, quiero registrarme con un correo y contraseña, para crear una cuenta en el sistema.
 
 **Criterios de aceptación:**
 
@@ -314,8 +237,7 @@ una cuenta en el sistema.
 
 **HU-07: Registrar proveedor con razón social y NIT**
 
-Como usuario, quiero registrarme con razón social y NIT de mi empresa,
-para crear una cuenta en el sistema.
+Como usuario, quiero registrarme con razón social y NIT de mi empresa, para crear una cuenta en el sistema.
 
 **Criterios de aceptación:**
 
@@ -412,9 +334,7 @@ para crear una cuenta en el sistema.
 
 **HU-09: Iniciar sesión con correo y contraseña**
 
-Como usuario, quiero iniciar sesión con mi correo y contraseña mediante
-una cuenta previamente registrada, para acceder a mi información
-personal en el sistema.
+Como usuario, quiero iniciar sesión con mi correo y contraseña mediante una cuenta previamente registrada, para acceder a mi información personal en el sistema.
 
 **Criterios de aceptación:**
 
@@ -525,9 +445,7 @@ personal en el sistema.
 
 **HU-13: Registrar servicio**
 
-Como proveedor, quiero registrar un servicio asociado a uno de mis
-negocios, indicando su nombre, imagen de referencia, duración, precio y
-descripción, para tenerlo disponible en el sistema.
+Como proveedor, quiero registrar un servicio asociado a uno de mis negocios, indicando su nombre, imagen de referencia, duración, precio y descripción, para tenerlo disponible en el sistema.
 
 **Criterios de aceptación:**
 
@@ -615,14 +533,11 @@ descripción, para tenerlo disponible en el sistema.
 
 ### Página de inicio
 
-Al abrir la aplicación, el usuario encuentra la página de inicio, desde donde
-puede iniciar sesión o registrarse según cuente o no con una cuenta creada.
+Al abrir la aplicación, el usuario encuentra la página de inicio, desde donde puede iniciar sesión o registrarse según cuente o no con una cuenta creada.
 
 ### Flujo de cliente
 
-Al ingresar como cliente sin una cuenta previa, puede completar el registro y
-recibe la confirmación de creación. En los sprints posteriores, esta área
-permitirá buscar negocios y sus servicios.
+Al ingresar como cliente sin una cuenta previa, puede completar el registro y recibe la confirmación de creación. En los sprints posteriores, esta área permitirá buscar negocios y sus servicios.
 
 | Inicio y registro | Confirmación |
 |---|---|
@@ -631,8 +546,7 @@ permitirá buscar negocios y sus servicios.
 
 ### Flujo de proveedor
 
-El proveedor puede crear una cuenta, iniciar sesión y registrar su negocio con
-los servicios asociados. Cada paso muestra su confirmación correspondiente.
+El proveedor puede crear una cuenta, iniciar sesión y registrar su negocio con los servicios asociados. Cada paso muestra su confirmación correspondiente.
 
 | Acceso y registro | Registro de negocio |
 |---|---|
@@ -663,36 +577,15 @@ los servicios asociados. Cada paso muestra su confirmación correspondiente.
 
 ## Conclusiones del sprint
 
-Durante el desarrollo del Sprint 1 se logró establecer la base funcional
-del sistema de gestión de reservas de servicios, enfocándose en los
-procesos de registro y autenticación de usuarios, así como en el
-registro inicial de negocios y servicios por parte de los proveedores.
+Durante el desarrollo del Sprint 1 se logró establecer la base funcional del sistema de gestión de reservas de servicios, enfocándose en los procesos de registro y autenticación de usuarios, así como en el registro inicial de negocios y servicios por parte de los proveedores.
 
-En el backend, se completó satisfactoriamente la implementación de las
-funcionalidades correspondientes al registro de clientes y proveedores,
-la autenticación mediante correo y el registro de negocios y servicios
-con su respectiva persistencia en base de datos, cumpliendo así con los
-criterios de aceptación definidos para cada historia de usuario.
+En el backend, se completó satisfactoriamente la implementación de las funcionalidades correspondientes al registro de clientes y proveedores, la autenticación mediante correo y el registro de negocios y servicios con su respectiva persistencia en base de datos, cumpliendo así con los criterios de aceptación definidos para cada historia de usuario.
 
-En cuanto al frontend, se avanzó en el diseño y validación de los
-mockups correspondientes a la página de inicio, el flujo de registro e
-inicio de sesión del cliente, y el flujo de registro de cuenta, negocio
-y servicios del proveedor, sentando las bases visuales que guiarán la
-implementación de las interfaces en las próximas iteraciones.
+En cuanto al frontend, se avanzó en el diseño y validación de los mockups correspondientes a la página de inicio, el flujo de registro e inicio de sesión del cliente, y el flujo de registro de cuenta, negocio y servicios del proveedor, sentando las bases visuales que guiarán la implementación de las interfaces en las próximas iteraciones.
 
-Este sprint permitió validar que la arquitectura y el flujo de
-navegación propuestos son coherentes con las necesidades identificadas
-en la problemática inicial, además de dejar consolidada la
-infraestructura de seguridad y persistencia sobre la cual se construirán
-los módulos de recursos, empleados, reservas y reportes en los sprints
-siguientes.
+Este sprint permitió validar que la arquitectura y el flujo de navegación propuestos son coherentes con las necesidades identificadas en la problemática inicial, además de dejar consolidada la infraestructura de seguridad y persistencia sobre la cual se construirán los módulos de recursos, empleados, reservas y reportes en los sprints siguientes.
 
-Como puntos de mejora para el próximo sprint, se identifica la necesidad
-de asignar oportunamente los responsables de las tareas de frontend, con
-el fin de evitar cuellos de botella entre el avance del backend y su
-correspondiente implementación visual, así como iniciar la integración
-entre ambos componentes para contar con un flujo funcional de principio
-a fin.
+Como puntos de mejora para el próximo sprint, se identifica la necesidad de asignar oportunamente los responsables de las tareas de frontend, con el fin de evitar cuellos de botella entre el avance del backend y su correspondiente implementación visual, así como iniciar la integración entre ambos componentes para contar con un flujo funcional de principio a fin.
 
 ## Evidencias y anexos
 
@@ -712,11 +605,8 @@ Anexo 3. modelo bpmn
 
 ### Evidencias
 
-Github front:
-[https://github.com/luisayarurob/BookingNow-.git](https://github.com/luisayarurob/BookingNow-.git)
+Github front: [https://github.com/luisayarurob/BookingNow-.git](https://github.com/luisayarurob/BookingNow-.git)
 
-Github Back:
-[https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow.git](https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow.git)
+Github Back: [https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow.git](https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow.git)
 
-Video Muestra:
-[https://drive.google.com/drive/folders/1J1T90aqpo4lwiOsSJOiMmiHYmtxe1jnm?usp=drive_link](https://drive.google.com/drive/folders/1J1T90aqpo4lwiOsSJOiMmiHYmtxe1jnm?usp=drive_link)
+Video Muestra: [https://drive.google.com/drive/folders/1J1T90aqpo4lwiOsSJOiMmiHYmtxe1jnm?usp=drive_link](https://drive.google.com/drive/folders/1J1T90aqpo4lwiOsSJOiMmiHYmtxe1jnm?usp=drive_link)
