@@ -569,53 +569,7 @@ El proveedor puede crear una cuenta, iniciar sesión y registrar su negocio con 
 
 ## Diagrama de componentes
 
-Este diagrama evidencia la arquitectura hexagonal del backend. Los adaptadores se conectan al núcleo mediante puertos, por lo que las reglas de negocio no dependen directamente de HTTP, JWT ni de PostgreSQL.
-
-::: mermaid
-flowchart LR
-    consumidor[Consumidor de la API REST]
-    baseDatos[(PostgreSQL en Supabase)]
-
-    subgraph backend[BookingNow API - Spring Boot]
-        direction LR
-
-        subgraph entrada[Adaptadores de entrada]
-            seguridad[Spring Security<br/>Validación JWT y CORS]
-            controladores[Controladores REST<br/>Auth, Cliente, Proveedor,<br/>Negocio y Servicio]
-        end
-
-        subgraph aplicacion[Aplicación - Núcleo hexagonal]
-            puertosEntrada[Puertos de entrada<br/>Casos de uso]
-            servicios[Servicios de aplicación<br/>Reglas de negocio]
-            puertosSalida[Puertos de salida<br/>Contratos de persistencia y seguridad]
-        end
-
-        subgraph salida[Adaptadores de salida]
-            repositorios[Repositorios JPA<br/>Hibernate]
-            contrasena[Adaptador BCrypt]
-            tokens[Adaptador JWT]
-        end
-    end
-
-    consumidor -->|HTTP · JSON · /api| seguridad
-    seguridad --> controladores
-    controladores --> puertosEntrada
-    puertosEntrada --> servicios
-    servicios --> puertosSalida
-    servicios --> contrasena
-    servicios --> tokens
-    puertosSalida --> repositorios
-    repositorios -->|JDBC · SSL| baseDatos
-
-    classDef external fill:#E8F1FF,stroke:#2563EB,color:#172554
-    classDef adapter fill:#ECFDF5,stroke:#059669,color:#064E3B
-    classDef core fill:#FFF7ED,stroke:#EA580C,color:#7C2D12
-    classDef database fill:#FDF2F8,stroke:#DB2777,color:#831843
-    class consumidor external
-    class seguridad,controladores,repositorios,contrasena,tokens adapter
-    class puertosEntrada,servicios,puertosSalida core
-    class baseDatos database
-:::
+El análisis del diagrama de componentes del backend se encuentra en [Diagrama_componentes.md](Diagrama_componentes.md).
 
 ## BPMN
 
