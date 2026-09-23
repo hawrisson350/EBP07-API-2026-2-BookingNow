@@ -6,7 +6,7 @@ Esta sección documenta la comunicación interna de cada entidad del backend. Ca
 
 | Entidad | Estado | Análisis |
 |---|---|---|
-| Cliente | Disponible | [Diagrama de componentes de Cliente](Diagrama_componentes_cliente.md) |
+| Cliente | Nivel 4 - Código | [Diagrama de código de Cliente](Diagrama_codigo_cliente.md) |
 | Proveedor | Pendiente | Se agregará al continuar el modelado. |
 | Negocio | Pendiente | Se agregará al continuar el modelado. |
 | Servicio | Pendiente | Se agregará al continuar el modelado. |
