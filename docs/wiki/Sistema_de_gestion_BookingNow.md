@@ -89,7 +89,10 @@ proveedor.
 
 # Repositorio
 
-El código fuente y la documentación técnica se encuentran en el repositorio del proyecto: [BookingNow API en GitHub](https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow).
+| Componente | Código fuente | Aplicación desplegada |
+|---|---|---|
+| Frontend React | [Repositorio del frontend](https://github.com/luisayarurob/BookingNow-) | [BookingNow en Vercel](https://booking-now-theta.vercel.app/) |
+| Backend Spring Boot | [Repositorio de la API](https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow) | [API en AWS](http://3.136.161.165:8080) · [Swagger](http://3.136.161.165:8080/swagger-ui.html) |
 
 # Estado del proyecto
 
