@@ -49,37 +49,15 @@ De esta manera, el sistema busca optimizar el proceso de agendamiento, eliminar 
 
 Nuestro objetivo es desarrollar una plataforma digital que permita la administración integral en los procesos de reserva de servicios, optimización en la gestión de agendas, disponibilidad de recursos y la administración de negocios.
 
-  ------------------------------------------------------------------------
-  **N°**   Objetivo
-  -------- ---------------------------------------------------------------
-  1        Implementar un módulo de gestión de usuarios que permita el
-           registro, autenticación y administración de perfiles de
-           clientes y proveedores.
-
-  2        Permitir a los proveedores registrar, consultar, editar y
-           activar o desactivar sus negocios dentro de la plataforma.
-
-  3        Desarrollar un módulo de gestión de servicios que facilite el
-           registro, consulta, edición y control del estado de los
-           servicios ofrecidos por cada negocio.
-
-  4        Diseñar un módulo de control de recursos que permita registrar,
-           consultar y gestionar la disponibilidad de los recursos
-           asociados a los servicios.
-
-  5        Implementar un módulo de reservas que permita registrar,
-           modificar, cancelar y consultar el historial de reservas,
-           incluyendo notificaciones automáticas de confirmación,
-           recordatorio y cancelación.
-
-  6        Habilitar la gestión de empleados, permitiendo su registro,
-           asignación a servicios, definición de horarios y verificación
-           de disponibilidad para su asignación a reservas.
-
-  7        Generar reportes de ocupación, uso de servicios y cancelaciones
-           que sirvan como apoyo a la toma de decisiones administrativas
-           de los proveedores.
-  ------------------------------------------------------------------------
+| N.º | Objetivo |
+|---:|---|
+| 1 | Implementar un módulo de gestión de usuarios que permita el registro, autenticación y administración de perfiles de clientes y proveedores. |
+| 2 | Permitir a los proveedores registrar, consultar, editar y activar o desactivar sus negocios dentro de la plataforma. |
+| 3 | Desarrollar un módulo de gestión de servicios que facilite el registro, consulta, edición y control del estado de los servicios ofrecidos por cada negocio. |
+| 4 | Diseñar un módulo de control de recursos que permita registrar, consultar y gestionar la disponibilidad de los recursos asociados a los servicios. |
+| 5 | Implementar un módulo de reservas que permita registrar, modificar, cancelar y consultar el historial de reservas, incluyendo notificaciones automáticas de confirmación, recordatorio y cancelación. |
+| 6 | Habilitar la gestión de empleados, permitiendo su registro, asignación a servicios, definición de horarios y verificación de disponibilidad para su asignación a reservas. |
+| 7 | Generar reportes de ocupación, uso de servicios y cancelaciones que sirvan como apoyo a la toma de decisiones administrativas de los proveedores. |
 
 # Alcance
 
