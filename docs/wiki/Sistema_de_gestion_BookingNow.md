@@ -1,10 +1,11 @@
 <div align="center">
 
-# BookingNow
+# BookingNow!
 
 ### Sistema de gestión de reservas de servicios
 
-**Análisis y Diseño de Sistemas II** Universidad de Antioquia - Facultad de Ingeniería - Ingeniería de Sistemas
+**Análisis y Diseño de Sistemas II**<br>
+Universidad de Antioquia - Facultad de Ingeniería - Ingeniería de Sistemas
 
 **Entrega formal — Sprint 1** Versión 0.1 - Septiembre de 2026
 
@@ -41,7 +42,7 @@ El presente proyecto propone el desarrollo de un sistema digital orientado a fac
 
 Negocios como clínicas, consultorios, salones de belleza y centros deportivos dependen en gran medida de sistemas de reservas eficientes para administrar su agenda y la disponibilidad de sus recursos. Sin embargo, la ausencia de herramientas adecuadas suele derivar en sobreocupación de horarios, cancelaciones desorganizadas y dificultades generales para la gestión de las agendas, afectando tanto la operación interna del negocio como la experiencia del cliente.
 
-Frente a esta problemática dirigimos el sistema a dos tipos de usuarios principales: clientes **y** proveedores de servicios**.** Los clientes podrán registrarse en la plataforma, acceder a los distintos negocios disponibles, realizar reservas y consultar información relevante sobre los servicios ofrecidos. Por su parte, los proveedores podrán registrarse y establecer su propio negocio dentro del sistema, gestionar su agenda, controlar la disponibilidad de sus recursos, realizar seguimiento a las reservas registradas, recibir notificaciones sobre confirmaciones o cancelaciones, así como registrar a sus empleados y asignarlos a los servicios correspondientes.
+Frente a esta problemática dirigimos el sistema a dos tipos de usuarios principales: **clientes** y **proveedores de servicios**. Los clientes podrán registrarse en la plataforma, acceder a los distintos negocios disponibles, realizar reservas y consultar información relevante sobre los servicios ofrecidos. Por su parte, los proveedores podrán registrarse y establecer su propio negocio dentro del sistema, gestionar su agenda, controlar la disponibilidad de sus recursos, realizar seguimiento a las reservas registradas, recibir notificaciones sobre confirmaciones o cancelaciones, así como registrar a sus empleados y asignarlos a los servicios correspondientes.
 
 De esta manera, el sistema busca optimizar el proceso de agendamiento, eliminar conflictos en la asignación de citas y mejorar la organización del servicio, brindando así una experiencia ágil, confiable y autónoma tanto para los clientes como para los proveedores. Este desarrollo se enmarca dentro del valor agregado que representa para el negocio la optimización en el uso de recursos, la mejora en la experiencia del cliente y una mayor eficiencia en la gestión de las agendas.
 
@@ -108,3 +109,4 @@ proveedor.
 ## Entrega del Sprint 1
 
 La documentación detallada, los mockups, diagramas, evidencias y anexos del primer sprint se encuentran en [Sprint_1.md](Sprint_1.md).
+
