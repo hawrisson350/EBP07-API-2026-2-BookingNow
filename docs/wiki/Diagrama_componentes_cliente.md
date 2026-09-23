@@ -8,79 +8,91 @@ El diagrama describe únicamente el diseño interno de la entidad **Cliente**. M
 
 ## Diagrama
 
+> Mermaid no ofrece de forma nativa todas las figuras UML de componentes, como la pestaña de componente o el conector lollipop. Por ello, el diagrama usa estereotipos UML, figuras diferentes y dependencias punteadas para distinguir cada rol.
+
 ::: mermaid
 flowchart LR
-    subgraph entrada[Adaptador de entrada REST]
-        controller[ClienteController<br/>/api/clientes]
-        dto[RegistrarClienteCommand<br/>ClienteResponse]
+    subgraph entrada[Exterior del hexágono - entrada]
+        controller["«adapter in»<br/>ClienteController<br/>/api/clientes"]
+        dto[/"«DTO»<br/>RegistrarClienteCommand<br/>ClienteResponse"/]
     end
 
-    subgraph aplicacion[Aplicación]
-        subgraph puertosIn[Puertos de entrada - Interfaces]
-            crear[CrearClienteUseCase<br/>crearCliente]
-            obtener[ObtenerClienteUseCase<br/>obtenerCliente]
-            listar[ObtenerClientesUseCase<br/>obtenerClientes]
-            eliminar[EliminarClienteUseCase<br/>eliminarCliente]
+    subgraph nucleo[Hexágono - núcleo de aplicación]
+        direction TB
+        subgraph puertosIn[Puertos de entrada]
+            crear(["«port in · interface»<br/>CrearClienteUseCase"])
+            obtener(["«port in · interface»<br/>ObtenerClienteUseCase"])
+            listar(["«port in · interface»<br/>ObtenerClientesUseCase"])
+            eliminar(["«port in · interface»<br/>EliminarClienteUseCase"])
         end
 
-        servicio[ClienteService<br/>Implementa los casos de uso]
+        servicio{{"«application service»<br/>ClienteService"}}
+        cliente[/"«entity»<br/>Cliente"/]
+        validaciones["«domain service»<br/>ValidacionCuenta<br/>ValidacionLogin"]
 
-        subgraph puertosOut[Puertos de salida - Interfaces]
-            clientePort[ClienteRepositoryPort]
-            correoPort[CorreoRegistradoPort]
-            contrasenaPort[ContrasenaPort]
+        subgraph puertosOut[Puertos de salida]
+            clientePort(["«port out · interface»<br/>ClienteRepositoryPort"])
+            correoPort(["«port out · interface»<br/>CorreoRegistradoPort"])
+            contrasenaPort(["«port out · interface»<br/>ContrasenaPort"])
         end
     end
 
-    subgraph dominio[Dominio]
-        cliente[Modelo Cliente]
-        validaciones[ValidacionCuenta<br/>ValidacionLogin]
+    subgraph salida[Exterior del hexágono - salida]
+        clienteAdapter["«adapter out · repository»<br/>ClienteRepositoryAdapter"]
+        jpaRepository(["«repository interface»<br/>ClienteJpaRepository"])
+        jpaEntity[/"«persistence entity»<br/>ClienteJpaEntity"/]
+        correoAdapter["«adapter out»<br/>CorreoRegistradoAdapter"]
+        correoEntity[/"«persistence entity»<br/>CorreoRegistradoJpaEntity"/]
+        contrasenaAdapter["«adapter out»<br/>ContrasenaAdapter · BCrypt"]
     end
 
-    subgraph salida[Adaptadores de salida]
-        clienteAdapter[ClienteRepositoryAdapter]
-        jpaRepository[ClienteJpaRepository<br/>Interfaz JPA]
-        jpaEntity[ClienteJpaEntity]
-        correoAdapter[CorreoRegistradoAdapter]
-        correoEntity[CorreoRegistradoJpaEntity]
-        contrasenaAdapter[ContrasenaAdapter<br/>BCrypt]
-    end
+    dto -->|solicitud/respuesta HTTP| controller
+    controller -. «depende de» .-> crear
+    controller -. «depende de» .-> obtener
+    controller -. «depende de» .-> listar
+    controller -. «depende de» .-> eliminar
 
-    dto --> controller
-    controller --> crear
-    controller --> obtener
-    controller --> listar
-    controller --> eliminar
+    servicio -. «implementa» .-> crear
+    servicio -. «implementa» .-> obtener
+    servicio -. «implementa» .-> listar
+    servicio -. «implementa» .-> eliminar
+    servicio -->|crea, consulta y elimina| cliente
+    servicio -->|aplica reglas| validaciones
+    servicio -. «depende de» .-> clientePort
+    servicio -. «depende de» .-> correoPort
+    servicio -. «depende de» .-> contrasenaPort
 
-    crear --> servicio
-    obtener --> servicio
-    listar --> servicio
-    eliminar --> servicio
-    servicio --> cliente
-    servicio --> validaciones
-    servicio --> clientePort
-    servicio --> correoPort
-    servicio --> contrasenaPort
-
-    clientePort -. implementado por .-> clienteAdapter
-    correoPort -. implementado por .-> correoAdapter
-    contrasenaPort -. implementado por .-> contrasenaAdapter
-    clienteAdapter --> jpaRepository
-    jpaRepository --> jpaEntity
+    clienteAdapter -. «implementa» .-> clientePort
+    correoAdapter -. «implementa» .-> correoPort
+    contrasenaAdapter -. «implementa» .-> contrasenaPort
+    clienteAdapter -->|usa| jpaRepository
+    jpaRepository -->|gestiona| jpaEntity
     clienteAdapter <-->|mapea| cliente
-    correoAdapter --> correoEntity
+    correoAdapter -->|consulta| correoEntity
 
-    classDef entry fill:#E8F1FF,stroke:#2563EB,color:#172554
-    classDef port fill:#FFF7ED,stroke:#EA580C,color:#7C2D12
-    classDef service fill:#FEF3C7,stroke:#D97706,color:#78350F
-    classDef domain fill:#F3E8FF,stroke:#9333EA,color:#581C87
-    classDef adapter fill:#ECFDF5,stroke:#059669,color:#064E3B
+    classDef entry fill:#DBEAFE,stroke:#2563EB,color:#172554,stroke-width:2px
+    classDef port fill:#FEF3C7,stroke:#D97706,color:#78350F,stroke-width:2px,stroke-dasharray: 5 3
+    classDef service fill:#F3E8FF,stroke:#7E22CE,color:#581C87,stroke-width:3px
+    classDef domain fill:#FCE7F3,stroke:#DB2777,color:#831843,stroke-width:2px
+    classDef adapter fill:#DCFCE7,stroke:#16A34A,color:#14532D,stroke-width:2px
     class controller,dto entry
-    class crear,obtener,listar,eliminar,clientePort,correoPort,contrasenaPort port
+    class crear,obtener,listar,eliminar,clientePort,correoPort,contrasenaPort,jpaRepository port
     class servicio service
     class cliente,validaciones domain
-    class clienteAdapter,jpaRepository,jpaEntity,correoAdapter,correoEntity,contrasenaAdapter adapter
+    class clienteAdapter,jpaEntity,correoAdapter,correoEntity,contrasenaAdapter adapter
 :::
+
+## Convención UML utilizada
+
+| Notación | Significado |
+|---|---|
+| Rectángulo azul | Adaptador de entrada o DTO REST. |
+| Óvalo amarillo punteado | Puerto: interfaz que separa la aplicación de sus dependencias. |
+| Hexágono morado | Servicio de aplicación que implementa casos de uso. |
+| Paralelogramo rosado | Modelo o regla del dominio. |
+| Rectángulo verde | Adaptador de salida o elemento de persistencia. |
+| Flecha punteada | Dependencia o relación de implementación. |
+| Flecha continua | Comunicación o uso en tiempo de ejecución. |
 
 ## Comunicación de los casos de uso
 
