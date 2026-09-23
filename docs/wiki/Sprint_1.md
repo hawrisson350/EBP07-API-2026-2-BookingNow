@@ -567,6 +567,66 @@ El proveedor puede crear una cuenta, iniciar sesión y registrar su negocio con 
 </p>
 > El diagrama completo se encuentra en el Anexo 2.
 
+## Diagrama de componentes
+
+El diagrama muestra los componentes implementados y su comunicación. La lógica
+del negocio se mantiene en el núcleo de la arquitectura hexagonal; los
+controladores REST, la persistencia y la seguridad actúan como adaptadores.
+
+::: mermaid
+flowchart LR
+    usuario[Cliente o proveedor]
+
+    subgraph vercel[Frontend]
+        react[Aplicación React en Vercel]
+    end
+
+    subgraph aws[Backend en AWS EC2 - Docker]
+        swagger[Swagger UI]
+
+        subgraph entrada[Adaptadores de entrada]
+            controladores[Controladores REST<br/>Auth, Cliente, Proveedor,<br/>Negocio y Servicio]
+            seguridad[Spring Security<br/>CORS y validación JWT]
+        end
+
+        subgraph nucleo[Núcleo de la aplicación]
+            puertosEntrada[Puertos de entrada<br/>Casos de uso]
+            servicios[Servicios de aplicación<br/>Reglas de negocio]
+            puertosSalida[Puertos de salida<br/>Repositorios y seguridad]
+        end
+
+        subgraph salida[Adaptadores de salida]
+            jpa[Adaptadores JPA<br/>Hibernate]
+            bcrypt[Adaptador BCrypt]
+            jwt[Codificador y decodificador JWT]
+        end
+    end
+
+    supabase[(PostgreSQL en Supabase)]
+
+    usuario --> react
+    usuario --> swagger
+    react -->|HTTPS · JSON · /api| seguridad
+    swagger -->|HTTP · JSON · /api| seguridad
+    seguridad --> controladores
+    controladores --> puertosEntrada
+    puertosEntrada --> servicios
+    servicios --> puertosSalida
+    servicios --> bcrypt
+    controladores --> jwt
+    puertosSalida --> jpa
+    jpa -->|JDBC · SSL| supabase
+
+    classDef external fill:#E8F1FF,stroke:#2563EB,color:#172554
+    classDef adapter fill:#ECFDF5,stroke:#059669,color:#064E3B
+    classDef core fill:#FFF7ED,stroke:#EA580C,color:#7C2D12
+    classDef database fill:#FDF2F8,stroke:#DB2777,color:#831843
+    class usuario,react,swagger external
+    class controladores,seguridad,jpa,bcrypt,jwt adapter
+    class puertosEntrada,servicios,puertosSalida core
+    class supabase database
+:::
+
 ## BPMN
 
 > Para consultar el modelo completo, ver el Anexo 3.
