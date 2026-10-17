@@ -8,7 +8,7 @@
 - Evidencia de código: `ObtenerServicioDetalleUseCase`, `ServicioService`, `ServicioDetalle`, `ServicioCatalogoController` y `ServicioCatalogoResponse`.
 - Persistencia: tipo e imágenes adicionales en `docs/db/sprint-2-schema.sql`; no se ha aplicado en Supabase.
 - Límites: el negocio no tiene una taxonomía de tipo de servicio; `tipoServicio` es texto libre. Carrusel y acción de iniciar reserva son responsabilidades del frontend.
-- Estado: detalle backend implementado; experiencia completa de selección/carrusel pendiente del frontend; verificación de comportamiento pendiente.
+- Estado: consulta backend verificada en H2 para detalle, datos del negocio e imágenes. La selección/carrusel del frontend y PostgreSQL siguen pendientes.
 
 ## Criterios
 

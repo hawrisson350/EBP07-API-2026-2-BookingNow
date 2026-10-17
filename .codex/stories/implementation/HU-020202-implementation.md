@@ -6,7 +6,7 @@
 - Evidencia de código: `HorarioAtencionService`, puertos de entrada/salida, `HorarioAtencionJpaEntity`, `HorarioAtencionRepositoryAdapter` y `HorarioAtencionController`.
 - Persistencia: tabla `bookingnow.horarios_atencion` en `docs/db/sprint-2-schema.sql`; no se ha aplicado en Supabase.
 - Diferencia frente a la HU: se configura después de registrar el negocio, no dentro del mismo formulario/transacción. No se devuelve embebido en la consulta de negocio; hay una ruta específica.
-- Estado: implementación backend parcial respecto al flujo integral; verificación de comportamiento pendiente.
+- Estado: endpoints backend verificados en H2 para horario válido, errores, permisos, reemplazo y consulta. Integrar horario al alta del negocio y validar en PostgreSQL sigue pendiente.
 
 ## Criterios
 

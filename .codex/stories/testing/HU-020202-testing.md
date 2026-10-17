@@ -1,7 +1,7 @@
 # Verificación — HU-020202 Configurar horario de atención
 
-- Estado: **no verificada por criterios**.
-- Evidencia ejecutada: compilación Sprint 2 registrada en [SPRINT-2.md](SPRINT-2.md); el código compila.
-- No ejecutado: pruebas unitarias, integración JPA/PostgreSQL, permisos con JWT y llamadas HTTP.
-- Criterios pendientes de evidencia: días repetidos, horas obligatorias, cierre anterior/igual, reemplazo y consulta por dueño/no dueño.
+- Estado: **criterios backend cubiertos en H2**.
+- Prueba ejecutada: `registraRecursosEmpleadosYHorarioConPermisosYValidaciones` dentro de `.\mvnw.cmd verify`; suite aprobada.
+- Evidencia: horario válido, cierre anterior, días repetidos, dueño/no dueño, falta de token, reemplazo por lista vacía y consulta del resultado.
+- No ejecutado: PostgreSQL/Supabase ni integración del horario dentro del formulario de creación del negocio.
 - Brecha conocida: la API es un paso separado del alta del negocio.

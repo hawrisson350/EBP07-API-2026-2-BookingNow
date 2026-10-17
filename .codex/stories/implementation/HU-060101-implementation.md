@@ -6,7 +6,7 @@
 - Evidencia de código: `ReservaService`, casos de uso y modelos de reserva, `ReservaRepositoryPort`, adaptadores JPA y `ReservaController`.
 - Persistencia: tabla `bookingnow.reservas` en `docs/db/sprint-2-schema.sql`; no se ha aplicado en Supabase.
 - Pendiente: correo de confirmación, resumen visual previo, flujo de selección del frontend y comprobación concurrente en PostgreSQL/Supabase. La API registra el estado `CONFIRMADA`.
-- Estado: implementación backend parcial respecto a la historia completa; verificación de comportamiento pendiente.
+- Estado: criterios centrales de API (disponibilidad, cliente autenticado, requisitos y conflictos) verificados en H2; la historia completa permanece parcial por correo/frontend y validación PostgreSQL.
 
 ## Criterios
 

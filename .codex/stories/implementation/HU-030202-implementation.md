@@ -6,7 +6,7 @@
 - Evidencia de código: `AsignacionServicioService`, `AsignarPersonalYRecursosUseCase`, `AsignacionServicioRepositoryPort`, `AsignacionServicioRepositoryAdapter`, `AsignacionServicioController` y relaciones en `ServicioJpaEntity`.
 - La respuesta de listados de servicio incluye las banderas y los IDs asociados; enviar listas vacías permite quitar asignaciones.
 - Persistencia: tablas `servicio_empleados` y `servicio_recursos` en `docs/db/sprint-2-schema.sql`; no se ha aplicado en Supabase.
-- Estado: implementación backend lista; verificación de comportamiento pendiente.
+- Estado: asignar/listar/quitar, validaciones, pertenencia y permisos verificados en H2. Validación de relaciones con PostgreSQL pendiente.
 
 ## Criterios
 

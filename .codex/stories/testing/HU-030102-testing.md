@@ -1,6 +1,6 @@
 # Verificación — HU-030102 Buscar servicio por nombre y tipo
 
-- Estado: **no verificada por criterios**.
-- Evidencia ejecutada: compilación Sprint 2 registrada en [SPRINT-2.md](SPRINT-2.md); el código compila.
-- No ejecutado: consultas con nombre, tipo, filtros combinados, paginación, contenido vacío ni respuesta HTTP.
-- Brecha: selección de tipo, paginación visual y aviso de ausencia de resultados pertenecen al frontend.
+- Estado: **criterios de búsqueda backend cubiertos en H2**.
+- Prueba ejecutada: `buscaYConsultaDetalleDeServicioConTipoEGaleria` dentro de `.\mvnw.cmd verify`; suite aprobada.
+- Evidencia: filtros por nombre y tipo separados/combinados, coincidencia parcial, paginación de dos resultados, contenido vacío y HTTP 200.
+- No ejecutado: integración frontend ni PostgreSQL/Supabase. El mensaje visual de lista vacía pertenece al frontend.

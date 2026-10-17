@@ -1,6 +1,6 @@
 # Verificación — HU-060101 Registrar reserva con fecha y hora
 
-- Estado: **no verificada por criterios**.
-- Evidencia ejecutada: compilación Sprint 2 registrada en [SPRINT-2.md](SPRINT-2.md); el código compila.
-- No ejecutado: consulta de disponibilidad, horarios, solapamiento, concurrencia, recurso sin cupo, empleado ocupado, cliente autenticado y reserva en PostgreSQL.
-- Pendientes: integrar proveedor de correo y verificar bloqueo/transacción con PostgreSQL real; compilación no prueba concurrencia.
+- Estado: **criterios centrales de API cubiertos en H2; PostgreSQL pendiente**.
+- Prueba ejecutada: `consultaDisponibilidadYRegistraReservaSinDobleAsignacion` dentro de `.\mvnw.cmd verify`; suite aprobada.
+- Evidencia: consulta de disponibilidad, JWT de cliente obligatorio, asociación al cliente autenticado, requerir recurso, reserva dentro/fuera del horario y rechazo de solapamiento.
+- Pendientes: integrar proveedor de correo y verificar bloqueo/transacción/concurrencia con PostgreSQL real. Resumen previo y selección visual dependen del frontend.

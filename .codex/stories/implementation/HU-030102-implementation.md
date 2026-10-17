@@ -5,7 +5,7 @@
 - Ruta: `GET /api/servicios?nombre=&tipo=&pagina=0&tamano=20` (límite de tamaño: 100).
 - Evidencia de código: `BuscarServiciosUseCase`, `PaginaServicios`, `ServicioService`, `ServicioRepositoryPort`, `ServicioJpaRepository`, `ServicioRepositoryAdapter`, `ServicioCatalogoController` y `ServicioResumenResponse`.
 - Tipo: texto opcional sin catálogo predefinido, conforme a la indefinición de Azure.
-- Estado: API implementada; selección de tipo, mensaje de “sin resultados” y navegación de páginas corresponden al frontend; verificación de comportamiento pendiente.
+- Estado: filtros, paginación y resultado vacío verificados en H2. La selección de tipo, mensaje visual y navegación corresponden al frontend; PostgreSQL sigue pendiente.
 
 ## Criterios
 

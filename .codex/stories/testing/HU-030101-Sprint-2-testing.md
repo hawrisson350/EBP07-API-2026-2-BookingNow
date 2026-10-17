@@ -1,6 +1,6 @@
 # Verificación — HU-030101 Listar información de servicio (Sprint 2, PBI 62)
 
-- Estado: **no verificada por criterios**. Azure también usa HU-030101 para otra historia de Sprint 1; consultar por título/PBI.
-- Evidencia ejecutada: compilación Sprint 2 registrada en [SPRINT-2.md](SPRINT-2.md); el código compila.
-- No ejecutado: llamada HTTP de detalle, ID inexistente, carga de imagen Base64 en PostgreSQL, serialización e integración frontend.
-- Brechas: carrusel e inicio de reserva requieren frontend; `tipoServicio` es texto libre opcional.
+- Estado: **criterios de consulta backend cubiertos en H2**. Azure también usa HU-030101 para otra historia de Sprint 1; consultar por título/PBI.
+- Prueba ejecutada: `buscaYConsultaDetalleDeServicioConTipoEGaleria` dentro de `.\mvnw.cmd verify`; suite aprobada.
+- Evidencia: detalle HTTP por ID, 404, tipo, dos imágenes, identificación del negocio y categoría del negocio.
+- No ejecutado: PostgreSQL/Supabase ni integración frontend. Carrusel e inicio de reserva requieren frontend; `tipoServicio` es texto libre opcional.

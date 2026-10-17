@@ -44,7 +44,7 @@ El 2026-09-17 se incorporó `workspace/Recuento HU.docx` a las cinco fichas de
 - BD existente necesita migrar datos y rellenar `correos_registrados` antes del login.
 - Sprint 2 incorpora código backend para horarios de atención, búsqueda/detalle de servicios, recursos, empleados, asignaciones y reservas. Ver `.codex/stories/implementation/SPRINT-2.md` para alcance y brechas.
 - El contrato SQL de Sprint 2 está en `docs/db/sprint-2-schema.sql`; todavía no se ha aplicado/verificado en Supabase.
-- La verificación Sprint 2 ejecutó `mvnw -DskipTests compile` con éxito; pruebas unitarias/integración, PostgreSQL real, frontend y correo quedan pendientes. No afirmar la HU completa/verificada por la compilación.
+- La verificación Sprint 2 ejecutó `mvnw verify`: 26 pruebas pasaron con H2; el detalle por criterio está en `.codex/stories/testing/`. PostgreSQL real, frontend y correo siguen pendientes. H2 no valida concurrencia ni compatibilidad final con Supabase.
 - `docs/db/initial-admin.sql` documenta el usuario administrador de desarrollo; verificar contra la instancia antes de operar.
 
 ## Verificacion

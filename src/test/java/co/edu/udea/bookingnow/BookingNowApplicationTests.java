@@ -15,6 +15,7 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.JsonNode;
 import java.net.URI;
 import java.net.http.*;
+import java.time.LocalDate;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
@@ -251,6 +252,168 @@ class BookingNowApplicationTests {
         assertThat(lista.get(0).get("imagenReferencia").asText()).isEqualTo(imagen);
         assertThat(lista.get(0).get("imagen_referencia_base64").asText()).isEqualTo(imagen);
     }
+
+    @Test void buscaYConsultaDetalleDeServicioConTipoEGaleria() throws Exception {
+        var proveedor = cuenta(true);
+        long idNegocio = crearNegocio(proveedor);
+        var body = servicio();
+        body.put("tipoServicio", "Masaje terapéutico");
+        body.put("imagenesBase64", List.of(IMAGEN_BASE64, IMAGEN_BASE64));
+        var creado = req("POST", "/api/negocios/" + idNegocio + "/servicios", body, proveedor.token());
+        assertThat(creado.statusCode()).isEqualTo(201);
+        long idServicio = json(creado).at("/datos/idServicio").asLong();
+        var segundoServicio = servicio();
+        segundoServicio.put("nombre", "Asesoria avanzada");
+        segundoServicio.put("tipoServicio", "Terapia familiar");
+        assertThat(req("POST", "/api/negocios/" + idNegocio + "/servicios", segundoServicio, proveedor.token()).statusCode()).isEqualTo(201);
+
+        var buscar = req("GET", "/api/servicios?nombre=ases&tipo=terap&pagina=0&tamano=1", null, null);
+        assertThat(buscar.statusCode()).isEqualTo(200);
+        assertThat(json(buscar).at("/totalElementos").asLong()).isEqualTo(2);
+        assertThat(json(buscar).at("/totalPaginas").asInt()).isEqualTo(2);
+        assertThat(json(buscar).at("/contenido").size()).isEqualTo(1);
+        assertThat(json(buscar).at("/contenido/0/nombre").asText()).isEqualTo("Asesoria");
+        assertThat(json(buscar).at("/contenido/0/imagenesBase64").isMissingNode()).isTrue();
+        var segundaPagina = json(req("GET", "/api/servicios?nombre=ases&tipo=terap&pagina=1&tamano=1", null, null));
+        assertThat(segundaPagina.at("/contenido/0/idServicio").asLong()).isNotEqualTo(json(buscar).at("/contenido/0/idServicio").asLong());
+        assertThat(json(req("GET", "/api/servicios?tipo=familiar", null, null)).at("/totalElementos").asLong()).isEqualTo(1);
+        assertThat(json(req("GET", "/api/servicios?nombre=avanzada", null, null)).at("/totalElementos").asLong()).isEqualTo(1);
+        assertThat(req("GET", "/api/servicios?nombre=ausente", null, null).statusCode()).isEqualTo(200);
+        assertThat(json(req("GET", "/api/servicios?nombre=ausente", null, null)).at("/contenido").size()).isZero();
+
+        var detalle = req("GET", "/api/servicios/" + idServicio, null, null);
+        assertThat(detalle.statusCode()).isEqualTo(200);
+        assertThat(json(detalle).at("/tipoServicio").asText()).isEqualTo("Masaje terapéutico");
+        assertThat(json(detalle).at("/imagenesBase64").size()).isEqualTo(2);
+        assertThat(json(detalle).at("/nombreNegocio").asText()).isEqualTo("Consultorio Demo");
+        assertThat(json(detalle).at("/categoriaNegocio").asText()).isEqualTo("Consultoria");
+        assertThat(req("GET", "/api/servicios/99999999", null, null).statusCode()).isEqualTo(404);
+    }
+
+    @Test void registraRecursosEmpleadosYHorarioConPermisosYValidaciones() throws Exception {
+        var propietario = cuenta(true);
+        var otroProveedor = cuenta(true);
+        long idNegocio = crearNegocio(propietario);
+        String base = "/api/negocios/" + idNegocio;
+
+        var recurso = Map.of("nombre", "Camilla", "cantidad", 2, "estado", "DISPONIBLE", "descripcion", "Camilla de consulta");
+        assertThat(req("POST", base + "/recursos", recurso, propietario.token()).statusCode()).isEqualTo(201);
+        assertThat(json(req("GET", base + "/recursos", null, propietario.token())).size()).isEqualTo(1);
+        var cantidadInvalida = new HashMap<>(recurso); cantidadInvalida.put("cantidad", 0);
+        assertThat(req("POST", base + "/recursos", cantidadInvalida, propietario.token()).statusCode()).isEqualTo(400);
+        var estadoInvalido = new HashMap<>(recurso); estadoInvalido.put("estado", "OTRO");
+        assertThat(req("POST", base + "/recursos", estadoInvalido, propietario.token()).statusCode()).isEqualTo(400);
+        assertThat(req("GET", base + "/recursos", null, otroProveedor.token()).statusCode()).isEqualTo(403);
+        assertThat(req("POST", base + "/recursos", recurso, null).statusCode()).isEqualTo(401);
+
+        var empleado = Map.of("nombres", "Ana Pérez", "documento", "12345678", "telefono", "+57 3001234567", "correo", "ana@example.com");
+        assertThat(req("POST", base + "/empleados", empleado, propietario.token()).statusCode()).isEqualTo(201);
+        assertThat(json(req("GET", base + "/empleados", null, propietario.token())).size()).isEqualTo(1);
+        assertThat(req("POST", base + "/empleados", empleado, propietario.token()).statusCode()).isEqualTo(409);
+        var correoInvalido = new HashMap<>(empleado); correoInvalido.put("correo", "invalido"); correoInvalido.put("documento", "87654321");
+        assertThat(req("POST", base + "/empleados", correoInvalido, propietario.token()).statusCode()).isEqualTo(400);
+        var documentoInvalido = new HashMap<>(empleado); documentoInvalido.put("documento", "CC-123");
+        assertThat(req("POST", base + "/empleados", documentoInvalido, propietario.token()).statusCode()).isEqualTo(400);
+        assertThat(req("GET", base + "/empleados", null, otroProveedor.token()).statusCode()).isEqualTo(403);
+
+        var horarios = List.of(Map.of("dia", "MONDAY", "horaApertura", "09:00", "horaCierre", "17:00"));
+        assertThat(req("PUT", base + "/horarios", horarios, propietario.token()).statusCode()).isEqualTo(200);
+        assertThat(json(req("GET", base + "/horarios", null, propietario.token())).size()).isEqualTo(1);
+        var horasInvalidas = List.of(Map.of("dia", "MONDAY", "horaApertura", "17:00", "horaCierre", "09:00"));
+        assertThat(req("PUT", base + "/horarios", horasInvalidas, propietario.token()).statusCode()).isEqualTo(400);
+        var diasRepetidos = List.of(
+                Map.of("dia", "MONDAY", "horaApertura", "09:00", "horaCierre", "17:00"),
+                Map.of("dia", "MONDAY", "horaApertura", "10:00", "horaCierre", "18:00"));
+        assertThat(req("PUT", base + "/horarios", diasRepetidos, propietario.token()).statusCode()).isEqualTo(400);
+        assertThat(req("GET", base + "/horarios", null, otroProveedor.token()).statusCode()).isEqualTo(403);
+        assertThat(req("GET", base + "/horarios", null, null).statusCode()).isEqualTo(401);
+        assertThat(req("PUT", base + "/horarios", List.of(), propietario.token()).statusCode()).isEqualTo(200);
+        assertThat(json(req("GET", base + "/horarios", null, propietario.token())).size()).isZero();
+    }
+
+    @Test void asignaEmpleadosYRecursosDelNegocioAlServicioYPermiteReemplazo() throws Exception {
+        var proveedor = cuenta(true);
+        var otroProveedor = cuenta(true);
+        long idNegocio = crearNegocio(proveedor);
+        String base = "/api/negocios/" + idNegocio;
+        var empleado = Map.of("nombres", "Ana Pérez", "documento", "23456789", "telefono", "+57 3001234567", "correo", "ana2@example.com");
+        var recurso = Map.of("nombre", "Silla", "cantidad", 1, "estado", "DISPONIBLE", "descripcion", "Silla de atención");
+        long idEmpleado = json(req("POST", base + "/empleados", empleado, proveedor.token())).at("/idEmpleado").asLong();
+        long idRecurso = json(req("POST", base + "/recursos", recurso, proveedor.token())).at("/idRecurso").asLong();
+        long idServicio = json(req("POST", base + "/servicios", servicio(), proveedor.token())).at("/datos/idServicio").asLong();
+        String ruta = base + "/servicios/" + idServicio + "/asignaciones";
+        var asignacion = Map.of("requiereEmpleados", true, "requiereRecursos", true,
+                "idEmpleados", List.of(idEmpleado), "idRecursos", List.of(idRecurso));
+        var guardada = req("PUT", ruta, asignacion, proveedor.token());
+        assertThat(guardada.statusCode()).isEqualTo(200);
+        assertThat(json(guardada).at("/idEmpleados/0").asLong()).isEqualTo(idEmpleado);
+        assertThat(req("PUT", ruta, asignacion, null).statusCode()).isEqualTo(401);
+        assertThat(req("PUT", ruta, asignacion, otroProveedor.token()).statusCode()).isEqualTo(403);
+        var listado = req("GET", base + "/servicios", null, proveedor.token());
+        assertThat(json(listado).at("/0/requiereEmpleados").asBoolean()).isTrue();
+        assertThat(json(listado).at("/0/idRecursosAsignados/0").asLong()).isEqualTo(idRecurso);
+
+        var duplicada = Map.of("requiereEmpleados", true, "requiereRecursos", false,
+                "idEmpleados", List.of(idEmpleado, idEmpleado), "idRecursos", List.of());
+        assertThat(req("PUT", ruta, duplicada, proveedor.token()).statusCode()).isEqualTo(400);
+        long otroNegocio = crearNegocio(proveedor);
+        var empleadoAjeno = Map.of("nombres", "Pedro Ruiz", "documento", "45678901", "telefono", "+57 3011234567", "correo", "pedro@example.com");
+        long idEmpleadoAjeno = json(req("POST", "/api/negocios/" + otroNegocio + "/empleados", empleadoAjeno, proveedor.token())).at("/idEmpleado").asLong();
+        var deOtroNegocio = Map.of("requiereEmpleados", true, "requiereRecursos", false,
+                "idEmpleados", List.of(idEmpleadoAjeno), "idRecursos", List.of());
+        assertThat(req("PUT", ruta, deOtroNegocio, proveedor.token()).statusCode()).isEqualTo(400);
+        var recursoNoDisponible = Map.of("nombre", "Equipo ocupado", "cantidad", 1, "estado", "NO_DISPONIBLE", "descripcion", "No asignable");
+        long idRecursoNoDisponible = json(req("POST", base + "/recursos", recursoNoDisponible, proveedor.token())).at("/idRecurso").asLong();
+        var recursoInvalido = Map.of("requiereEmpleados", false, "requiereRecursos", true,
+                "idEmpleados", List.of(), "idRecursos", List.of(idRecursoNoDisponible));
+        assertThat(req("PUT", ruta, recursoInvalido, proveedor.token()).statusCode()).isEqualTo(400);
+        var quitar = Map.of("requiereEmpleados", false, "requiereRecursos", false,
+                "idEmpleados", List.of(), "idRecursos", List.of());
+        assertThat(req("PUT", ruta, quitar, proveedor.token()).statusCode()).isEqualTo(200);
+        assertThat(json(req("GET", base + "/servicios", null, proveedor.token())).at("/0/idEmpleadosAsignados").size()).isZero();
+    }
+
+    @Test void consultaDisponibilidadYRegistraReservaSinDobleAsignacion() throws Exception {
+        var cliente = cuenta(false);
+        var proveedor = cuenta(true);
+        long idNegocio = crearNegocio(proveedor);
+        LocalDate fecha = LocalDate.now().plusDays(1);
+        String base = "/api/negocios/" + idNegocio;
+        var horario = List.of(Map.of("dia", fecha.getDayOfWeek().name(), "horaApertura", "09:00", "horaCierre", "10:30"));
+        assertThat(req("PUT", base + "/horarios", horario, proveedor.token()).statusCode()).isEqualTo(200);
+        var empleado = Map.of("nombres", "Luis Gómez", "documento", "34567890", "telefono", "+57 3011234567", "correo", "luis@example.com");
+        var recurso = Map.of("nombre", "Consultorio", "cantidad", 1, "estado", "DISPONIBLE", "descripcion", "Consultorio 1");
+        long idEmpleado = json(req("POST", base + "/empleados", empleado, proveedor.token())).at("/idEmpleado").asLong();
+        long idRecurso = json(req("POST", base + "/recursos", recurso, proveedor.token())).at("/idRecurso").asLong();
+        long idServicio = json(req("POST", base + "/servicios", servicio(), proveedor.token())).at("/datos/idServicio").asLong();
+        var asignacion = Map.of("requiereEmpleados", true, "requiereRecursos", true,
+                "idEmpleados", List.of(idEmpleado), "idRecursos", List.of(idRecurso));
+        assertThat(req("PUT", base + "/servicios/" + idServicio + "/asignaciones", asignacion, proveedor.token()).statusCode()).isEqualTo(200);
+
+        String fechaTexto = fecha.toString();
+        String rutaDisponibilidad = "/api/servicios/" + idServicio + "/disponibilidad?fecha=" + fechaTexto;
+        var disponibilidad = req("GET", rutaDisponibilidad, null, null);
+        assertThat(disponibilidad.statusCode()).isEqualTo(200);
+        assertThat(json(disponibilidad).size()).isGreaterThan(0);
+        assertThat(json(disponibilidad).get(0).get("empleadosDisponibles").get(0).asLong()).isEqualTo(idEmpleado);
+
+        var reserva = Map.of("idServicio", idServicio, "idEmpleado", idEmpleado, "idRecurso", idRecurso,
+                "fecha", fechaTexto, "hora", "09:00");
+        assertThat(req("POST", "/api/reservas", reserva, null).statusCode()).isEqualTo(401);
+        var faltaRecurso = Map.of("idServicio", idServicio, "idEmpleado", idEmpleado,
+                "fecha", fechaTexto, "hora", "09:30");
+        assertThat(req("POST", "/api/reservas", faltaRecurso, cliente.token()).statusCode()).isEqualTo(400);
+        var creada = req("POST", "/api/reservas", reserva, cliente.token());
+        assertThat(creada.statusCode()).isEqualTo(201);
+        assertThat(json(creada).at("/idCliente").asLong()).isEqualTo(cliente.id());
+        assertThat(json(creada).at("/estado").asText()).isEqualTo("CONFIRMADA");
+        assertThat(req("POST", "/api/reservas", reserva, cliente.token()).statusCode()).isEqualTo(409);
+        var fueraDeHorario = Map.of("idServicio", idServicio, "idEmpleado", idEmpleado, "idRecurso", idRecurso,
+                "fecha", fechaTexto, "hora", "10:15");
+        assertThat(req("POST", "/api/reservas", fueraDeHorario, cliente.token()).statusCode()).isEqualTo(409);
+        var despues = json(req("GET", rutaDisponibilidad, null, null));
+        for (JsonNode slot : despues) assertThat(slot.get("hora").asText()).isNotEqualTo("09:00");
+    }
     @Test void servicioSeAsociaYListaConPrecioCero() throws Exception {
         var c=cuenta(true);long id=crearNegocio(c);String ruta="/api/negocios/"+id+"/servicios";
         var body=servicio();body.put("precio",0);var r=req("POST",ruta,body,c.token());
@@ -320,7 +483,10 @@ class BookingNowApplicationTests {
         assertThat(req("GET","/swagger-ui/index.html",null,null).statusCode()).isEqualTo(200);
         var r=req("GET","/v3/api-docs",null,null);assertThat(r.statusCode()).isEqualTo(200);assertThat(r.body()).doesNotContain("contrasenaHash");
         var api=json(r);assertThat(api.at("/components/securitySchemes/bearerAuth/scheme").asText()).isEqualTo("bearer");
-        for(String ruta:List.of("/api/auth/login","/api/negocios","/api/negocios/mio","/api/negocios/{idNegocio}/servicios")) assertThat(api.get("paths").has(ruta)).isTrue();
+        for(String ruta:List.of("/api/auth/login","/api/negocios","/api/negocios/mio","/api/negocios/{idNegocio}/servicios",
+                "/api/negocios/{idNegocio}/recursos","/api/negocios/{idNegocio}/empleados","/api/negocios/{idNegocio}/horarios",
+                "/api/negocios/{idNegocio}/servicios/{idServicio}/asignaciones","/api/servicios","/api/servicios/{idServicio}",
+                "/api/servicios/{idServicio}/disponibilidad","/api/reservas")) assertThat(api.get("paths").has(ruta)).isTrue();
         assertThat(api.get("paths").has("/api/auth/csrf")).isFalse();
     }
 

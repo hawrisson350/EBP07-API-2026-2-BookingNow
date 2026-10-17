@@ -407,7 +407,7 @@ en [sprint-1-schema.sql](docs/db/sprint-1-schema.sql).
 .\mvnw.cmd clean verify
 ```
 
-Una ejecución anterior aprobó 21 pruebas con H2. La compilación de Sprint 2 se
-realizó con `-DskipTests`; no representa una nueva ejecución de pruebas. H2 sirve
-para pruebas rápidas; los cambios de base de datos también deben probarse en
-PostgreSQL/Supabase.
+La verificación del Sprint 2 ejecutó `.\mvnw.cmd verify`: pasaron 26 pruebas
+con H2. H2 sirve para pruebas rápidas; los cambios de base de datos también
+deben probarse en PostgreSQL/Supabase. Consulta la evidencia por HU en
+[.codex/stories/testing](.codex/stories/testing/).

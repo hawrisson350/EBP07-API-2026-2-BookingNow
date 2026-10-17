@@ -20,4 +20,4 @@ Fecha de registro: 2026-10-17. Estimaciones y alcance iniciales: [análisis del 
 - `tipoServicio` es texto libre porque Azure no define categorías controladas.
 - La programación del frontend, el despliegue y la validación integrada con la base remota no están incluidos.
 - HU-030101 aparece duplicada en Azure entre Sprint 1 y Sprint 2; se distinguen por título/PBI.
-- Esta evidencia no declara las historias verificadas: la compilación comprueba compilabilidad, no todos los criterios de aceptación.
+- Las pruebas H2 ejecutadas y su relación con los criterios están en [testing Sprint 2](../testing/SPRINT-2.md). Los resultados no comprueban PostgreSQL/Supabase, correo ni experiencia completa del frontend.

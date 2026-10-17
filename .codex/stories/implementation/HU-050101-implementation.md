@@ -6,7 +6,7 @@
 - Evidencia de código: `EmpleadoService`, `EmpleadoRepositoryPort`, `EmpleadoJpaEntity`, `EmpleadoRepositoryAdapter` y `EmpleadoRecursoController`.
 - Persistencia: tabla `bookingnow.empleados` en `docs/db/sprint-2-schema.sql`; no se ha aplicado en Supabase.
 - Supuesto técnico: documento de 5–15 dígitos y teléfono de 7–15 dígitos numéricos, con símbolos telefónicos comunes. Azure no define esos rangos.
-- Estado: implementación backend lista; límite máximo de empleados por negocio no especificado y no implementado; verificación de comportamiento pendiente.
+- Estado: alta, listado, duplicidad de documento, correo/documento inválidos y permisos verificados en H2. Falta probar teléfono inválido; límite máximo por negocio no definido. PostgreSQL pendiente.
 
 ## Criterios
 

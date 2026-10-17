@@ -5,7 +5,7 @@
 - Rutas: `POST/GET /api/negocios/{idNegocio}/recursos`.
 - Evidencia de código: `RecursoService`, `RecursoRepositoryPort`, `RecursoJpaEntity`, `RecursoRepositoryAdapter` y `EmpleadoRecursoController`.
 - Persistencia: tabla `bookingnow.recursos` en `docs/db/sprint-2-schema.sql`; no se ha aplicado en Supabase.
-- Estado: implementación backend lista; verificación de comportamiento pendiente.
+- Estado: alta, listado, validaciones de cantidad/estado y permisos verificados en H2. Persistencia PostgreSQL pendiente.
 
 ## Criterios
 
