@@ -1,0 +1,74 @@
+@startuml
+' === BookingNow · Cliente ===
+' Alcance: componentes de código del backend. Sin frontend, despliegue ni servicios cloud.
+title BookingNow — Arquitectura hexagonal del módulo Cliente
+left to right direction
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+skinparam ArrowColor #475569
+skinparam component {
+  BorderColor #334155
+  FontColor #0F172A
+}
+skinparam interface {
+  BorderColor #475569
+  BackgroundColor #FFFFFF
+}
+
+skinparam component {
+  BackgroundColor<<entrada>> #DBEAFE
+  BorderColor<<entrada>> #2563EB
+  BackgroundColor<<aplicacion>> #FEF3C7
+  BorderColor<<aplicacion>> #D97706
+  BackgroundColor<<dominio>> #FCE7F3
+  BorderColor<<dominio>> #BE185D
+  BackgroundColor<<salida>> #DCFCE7
+  BorderColor<<salida>> #16A34A
+  BackgroundColor<<persistencia>> #E0F2FE
+  BorderColor<<persistencia>> #0284C7
+}
+
+actor "Cliente web\no consumidor API" as Consumidor
+
+component "Adaptador de entrada\n<<REST controllers>>\n\nClienteController\n/api/clientes\n\nAuthController\n/api/clientes/login" as Entrada <<entrada>>
+
+interface "Puertos de entrada\n<<interfaces>>\n\nCrearClienteUseCase\nObtenerClienteUseCase\nObtenerClientesUseCase\nEliminarClienteUseCase\nIniciarSesionClienteUseCase" as PuertoIn
+
+component "ClienteService\n<<application service>>" as Servicio <<aplicacion>>
+
+interface "Puertos de salida\n<<interfaces>>\n\nClienteRepositoryPort\nCorreoRegistradoPort\nContrasenaPort" as PuertoOut
+
+component "Adaptadores de salida\n<<repository · persistence · security>>\n\nClienteRepositoryAdapter\nCorreoRegistradoAdapter\nContrasenaAdapter (BCrypt)" as Salida <<salida>>
+
+component "Persistencia\n<<Spring Data JPA>>\n\nClienteJpaRepository\nClienteJpaEntity\nCorreoRegistradoJpaEntity" as Persistencia <<persistencia>>
+
+component "Dominio\n<<model and rules>>\n\nCliente\nValidacionCuenta\nValidacionLogin" as Dominio <<dominio>>
+
+Consumidor --> Entrada : HTTP / JSON
+Entrada --> PuertoIn : invoca casos de uso
+Servicio ..|> PuertoIn : implementa
+Servicio ..> PuertoOut : depende de
+PuertoOut <|.. Salida : implementa
+Salida --> Persistencia : JPA
+Servicio --> Dominio : crea · consulta · valida
+
+' Organiza el modelo de dominio bajo el servicio, sin crear una relación adicional.
+Servicio -[hidden]down- Dominio
+
+legend bottom
+  |= Color |= Capa |
+  |<#DBEAFE> Azul | Adaptador de entrada: recibe HTTP |
+  |<#FEF3C7> Amarillo | Aplicación: orquesta los casos de uso |
+  |<#FCE7F3> Rosa | Dominio: modelo y reglas de negocio |
+  |<#DCFCE7> Verde | Adaptadores de salida |
+  |<#E0F2FE> Celeste | Persistencia JPA |
+endlegend
+
+note bottom of Servicio
+Los puertos son interfaces.
+Los controladores invocan los puertos de entrada;
+ClienteService los implementa y solo depende de puertos de salida.
+end note
+@enduml
