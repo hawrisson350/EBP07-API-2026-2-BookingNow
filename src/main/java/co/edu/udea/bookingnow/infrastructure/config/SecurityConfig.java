@@ -38,6 +38,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/health", "/error").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/servicios", "/api/servicios/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/clientes", "/api/proveedores",
                         "/api/clientes/login", "/api/proveedores/login", "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/clientes", "/api/proveedores").hasRole("ADMINISTRADOR")
@@ -64,7 +65,7 @@ public class SecurityConfig {
             @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://localhost:4200}") String allowedOrigins) {
         var configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(allowedOrigins.split(",")).stream().map(String::strip).filter(s -> !s.isEmpty()).toList());
-        configuration.setAllowedMethods(List.of("GET", "POST", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setMaxAge(3600L);
         var source = new UrlBasedCorsConfigurationSource();

@@ -8,8 +8,10 @@ public record RegistrarServicioRequest(
         Integer duracionMinutos,
         java.math.BigDecimal precio,
         String descripcion,
-        @JsonAlias("imagenReferencia") String imagenReferenciaBase64) {
+        @JsonAlias("imagenReferencia") String imagenReferenciaBase64,
+        String tipoServicio,
+        java.util.List<String> imagenesBase64) {
     public RegistrarServicioCommand toCommand() {
-        return new RegistrarServicioCommand(nombre, duracionMinutos, precio, descripcion, imagenReferenciaBase64);
+        return new RegistrarServicioCommand(nombre, duracionMinutos, precio, descripcion, imagenReferenciaBase64, tipoServicio, imagenesBase64);
     }
 }

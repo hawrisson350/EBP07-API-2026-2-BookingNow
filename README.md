@@ -73,7 +73,7 @@ iniciar sesión otra vez.
 
 | Rol del login | Pantallas o acciones permitidas |
 |---|---|
-| `CLIENTE` | Ver su propia cuenta. Las reservas llegarán en otro sprint. |
+| `CLIENTE` | Ver su cuenta, consultar servicios y disponibilidad, y registrar reservas. |
 | `PROVEEDOR` | Ver su cuenta, crear sus negocios y gestionar sus servicios. |
 | `ADMINISTRADOR` | Consultar clientes, proveedores, negocios y los servicios de cada negocio. |
 
@@ -103,8 +103,25 @@ Authorization: Bearer EL_TOKEN_DEL_LOGIN
 | GET | `/api/negocios` | Administrador | Listar todos los negocios |
 | GET | `/api/negocios/mio` | Proveedor | Listar los negocios propios |
 | POST | `/api/negocios` | Proveedor | Crear negocio |
-| GET | `/api/negocios/{idNegocio}/servicios` | Proveedor dueño o administrador | Listar servicios |
+| GET | `/api/negocios/{idNegocio}/servicios` | Proveedor dueño o administrador | Listar servicios del negocio |
 | POST | `/api/negocios/{idNegocio}/servicios` | Proveedor dueño | Crear servicio |
+| GET | `/api/servicios?nombre=&tipo=&pagina=0&tamano=20` | No | Buscar servicios con filtros y paginación; sin coincidencias, `contenido` llega vacío. Devuelve resumen sin imágenes. |
+| GET | `/api/servicios/{idServicio}` | No | Consultar detalle de servicio y negocio |
+| GET | `/api/servicios/{idServicio}/disponibilidad?fecha=AAAA-MM-DD` | No | Consultar horas y personal/recursos disponibles |
+| POST | `/api/negocios/{idNegocio}/recursos` | Proveedor dueño | Registrar recurso |
+| GET | `/api/negocios/{idNegocio}/recursos` | Proveedor dueño | Listar recursos |
+| POST | `/api/negocios/{idNegocio}/empleados` | Proveedor dueño | Registrar empleado |
+| GET | `/api/negocios/{idNegocio}/empleados` | Proveedor dueño | Listar empleados |
+| PUT | `/api/negocios/{idNegocio}/horarios` | Proveedor dueño | Configurar o reemplazar el horario semanal |
+| GET | `/api/negocios/{idNegocio}/horarios` | Proveedor dueño | Consultar horario semanal |
+| PUT | `/api/negocios/{idNegocio}/servicios/{idServicio}/asignaciones` | Proveedor dueño | Reemplazar asignación de empleados y recursos |
+| POST | `/api/reservas` | Cliente | Registrar reserva (el correo de confirmación aún no está conectado) |
+
+El contrato para las nuevas tablas de recursos, empleados, horarios, asignaciones,
+imágenes de servicio y reservas está en [sprint-2-schema.sql](docs/db/sprint-2-schema.sql).
+Debe aplicarlo el equipo responsable de PostgreSQL antes de usar estos endpoints en AWS.
+La API no ejecuta ese SQL automáticamente. Las reservas quedan en estado `CONFIRMADA` al finalizar el registro. El correo automático
+que solicita la HU requiere configurar un proveedor de correo y todavía no está conectado.
 
 ## 6. Datos de cada formulario
 
@@ -230,6 +247,63 @@ convertirlo a Base64. Galería admite máximo 20 elementos `IMAGEN` o `VIDEO`.
 
 Duración: entero mayor que cero. Precio: cero o mayor, máximo dos decimales.
 Imagen: opcional, data URL Base64 de JPEG, PNG, WebP o GIF, máximo 5 MiB. Para compatibilidad con React, la API también acepta `imagenReferencia` como alias de `imagenReferenciaBase64` y devuelve ambos nombres.
+También se pueden enviar `tipoServicio` e `imagenesBase64` (lista de hasta 20 imágenes, máximo 5 MiB cada una). La búsqueda pública acepta el filtro opcional `tipo`; el catálogo no impone una lista fija de tipos.
+
+### Configurar el horario del negocio
+
+`PUT /api/negocios/{idNegocio}/horarios` con token del proveedor. Envía los días que atiende; los días que no incluyas quedan cerrados. Las horas usan formato de 24 horas.
+
+```json
+[
+  { "dia": "MONDAY", "horaApertura": "09:00", "horaCierre": "17:00" },
+  { "dia": "TUESDAY", "horaApertura": "09:00", "horaCierre": "17:00" }
+]
+```
+
+### Registrar recursos y empleados
+
+Ambas rutas requieren el token del proveedor dueño del negocio.
+
+```text
+POST /api/negocios/{idNegocio}/recursos
+```
+
+```json
+{ "nombre": "Camilla", "cantidad": 2, "estado": "DISPONIBLE", "descripcion": "Camillas para atención" }
+```
+
+```text
+POST /api/negocios/{idNegocio}/empleados
+```
+
+```json
+{ "nombres": "Ana Pérez", "documento": "12345678", "telefono": "+57 3001234567", "correo": "ana@example.com" }
+```
+
+Consulta las listas con `GET /api/negocios/{idNegocio}/recursos` y `GET /api/negocios/{idNegocio}/empleados`.
+
+### Asignar empleados y recursos a un servicio
+
+`PUT /api/negocios/{idNegocio}/servicios/{idServicio}/asignaciones` con token del proveedor. Envía los IDs obtenidos de las listas anteriores. La operación reemplaza la asignación actual; usa listas vacías para quitar asociaciones.
+
+```json
+{ "requiereEmpleados": true, "requiereRecursos": true, "idEmpleados": [1], "idRecursos": [1] }
+```
+
+### Consultar disponibilidad y crear una reserva
+
+La disponibilidad se puede consultar sin iniciar sesión. La creación requiere token de cliente; el ID del cliente se toma del token y no se envía en el JSON.
+
+```text
+GET /api/servicios/{idServicio}/disponibilidad?fecha=2026-10-20
+POST /api/reservas
+```
+
+```json
+{ "idServicio": 1, "idEmpleado": 1, "idRecurso": 1, "fecha": "2026-10-20", "hora": "09:00" }
+```
+
+Las asignaciones de empleado y recurso se envían cuando el servicio las requiere. La API vuelve a validar la disponibilidad al guardar. El correo de confirmación todavía no está integrado.
 
 ## 7. Cómo tratar los errores
 
@@ -333,5 +407,7 @@ en [sprint-1-schema.sql](docs/db/sprint-1-schema.sql).
 .\mvnw.cmd clean verify
 ```
 
-La última verificación local aprobó 21 pruebas. H2 sirve para pruebas rápidas;
-los cambios de base de datos también deben probarse en PostgreSQL/Supabase.
+Una ejecución anterior aprobó 21 pruebas con H2. La compilación de Sprint 2 se
+realizó con `-DskipTests`; no representa una nueva ejecución de pruebas. H2 sirve
+para pruebas rápidas; los cambios de base de datos también deben probarse en
+PostgreSQL/Supabase.

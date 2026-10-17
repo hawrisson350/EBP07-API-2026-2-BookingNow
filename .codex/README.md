@@ -26,9 +26,9 @@ trabajo; no ejecutan agentes, pruebas ni despliegues automaticamente.
 
 ## Donde colocar las HU
 
-Las cinco historias del sprint tienen una ficha en
+Las historias recibidas tienen una ficha en
 [detail-user-stories](stories/detail-user-stories/). Incluyen los requisitos recibidos en `workspace/Recuento HU.docx`.
-La revision inicial identifica diferencias y dudas; no acredita implementacion.
+Sprint 1 contiene cinco historias y Sprint 2 contiene siete historias identificadas desde Azure DevOps. El análisis y la implementación se registran por separado; una compilación no acredita por sí sola los criterios de aceptación.
 Para otra historia, copiar [US_Template.md](stories/US_Template.md).
 
 Conservar el identificador oficial `HU-XXXXXX` en todos sus documentos:
@@ -37,6 +37,8 @@ Conservar el identificador oficial `HU-XXXXXX` en todos sus documentos:
 - `analysis/HU-XXXXXX-analysis.md`: analisis, dudas y propuesta tecnica.
 - `implementation/HU-XXXXXX-implementation.md`: cambios realmente realizados.
 - `testing/HU-XXXXXX-testing.md`: verificaciones y resultados reales.
+
+Para Sprint 2 también hay un resumen de estimación en `analysis/SPRINT-2-estimacion-y-alcance.md` y resúmenes de implementación/verificación por sprint. HU-030101 está duplicada en el tablero; usar el título y PBI para distinguir sus fichas.
 
 Los archivos `TEMPLATE.md` de cada etapa son plantillas, no evidencia completada.
 

@@ -1,6 +1,6 @@
 # Contexto de BookingNow
 
-Fecha de referencia: 2026-09-17. Verificar el codigo antes de tomar decisiones.
+Fecha de referencia: 2026-10-17. Verificar el codigo antes de tomar decisiones.
 Fuentes: README.md, pom.xml, src/ y conversaciones/requisitos del equipo.
 
 ## Decisiones actuales
@@ -37,14 +37,15 @@ El 2026-09-17 se incorporó `workspace/Recuento HU.docx` a las cinco fichas de
   `stories/implementation/SPRINT-1.md` y `stories/testing/SPRINT-1-testing.md`.
 - Login común por correo en `/api/auth/login`; roles CLIENTE y PROVEEDOR.
 - Decisiones técnicas provisionales: correo único entre roles, cuentas nuevas ACTIVA,
-  razón social normalizada, multimedia mediante URLs HTTPS, duración entera y precio
+  razón social normalizada, fotos y multimedia como data URLs Base64 en JSON, duración entera y precio
   con dos decimales. No son requisitos adicionales del Word.
 - Pendientes de aceptación: frontend, PostgreSQL real y tiempos del despliegue.
 - Registro devuelve `mensaje` y `datos`; login común devuelve `cuenta.id` y `cuenta.rol`.
 - BD existente necesita migrar datos y rellenar `correos_registrados` antes del login.
-- No existe módulo de reservas ni carga de archivos multimedia.
-- `docs/db/initial-admin.sql` crea el primer administrador; no hay registro
-  público de administradores. Falta aplicarlo y probarlo en Supabase.
+- Sprint 2 incorpora código backend para horarios de atención, búsqueda/detalle de servicios, recursos, empleados, asignaciones y reservas. Ver `.codex/stories/implementation/SPRINT-2.md` para alcance y brechas.
+- El contrato SQL de Sprint 2 está en `docs/db/sprint-2-schema.sql`; todavía no se ha aplicado/verificado en Supabase.
+- La verificación Sprint 2 ejecutó `mvnw -DskipTests compile` con éxito; pruebas unitarias/integración, PostgreSQL real, frontend y correo quedan pendientes. No afirmar la HU completa/verificada por la compilación.
+- `docs/db/initial-admin.sql` documenta el usuario administrador de desarrollo; verificar contra la instancia antes de operar.
 
 ## Verificacion
 
