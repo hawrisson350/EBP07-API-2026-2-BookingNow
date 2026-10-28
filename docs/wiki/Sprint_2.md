@@ -21,7 +21,7 @@ El documento fuente incluye este apartado, pero no describe errores concretos ni
 ### BPMN
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/bpmn-sprint-2.jpg" alt="Diagrama BPMN del Sprint 2" width="900">
+  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/bpmn-sprint-2.jpg" alt="Diagrama BPMN del Sprint 2" width="420">
 </p>
 
 ## Historias de usuario y diagramas de actividades
@@ -42,7 +42,7 @@ Las siguientes historias y flujos se transcriben del documento de entrega del Sp
 6. Si siguen disponibles, guarda la reserva, bloquea el horario, envía un correo con las opciones **Confirmar cita** y **Cancelar cita**, y muestra la confirmación.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-060101-reservar-servicio.png" alt="Diagrama de actividades para registrar una reserva" width="900">
+  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-060101-reservar-servicio.png" alt="Diagrama de actividades para registrar una reserva" width="420">
 </p>
 
 ### HU-040101 — Registrar recurso
@@ -58,7 +58,7 @@ Las siguientes historias y flujos se transcriben del documento de entrega del Sp
 5. El recurso queda disponible para relacionarlo posteriormente con servicios y empleados.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-040101-registrar-recurso.png" alt="Diagrama de actividades para registrar un recurso" width="900">
+  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-040101-registrar-recurso.png" alt="Diagrama de actividades para registrar un recurso" width="420">
 </p>
 
 ### HU-030101 — Listar información de servicio
@@ -73,7 +73,7 @@ Las siguientes historias y flujos se transcriben del documento de entrega del Sp
 4. El sistema ofrece la opción **Reservar servicio**. Si el cliente la elige, inicia el proceso de reserva; de lo contrario, termina la consulta.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-030101-consultar-servicio.png" alt="Diagrama de actividades para consultar la información de un servicio" width="900">
+  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-030101-consultar-servicio.png" alt="Diagrama de actividades para consultar la información de un servicio" width="420">
 </p>
 
 ### HU-050101 — Registrar empleado
@@ -90,7 +90,7 @@ Las siguientes historias y flujos se transcriben del documento de entrega del Sp
 6. El empleado queda disponible para asignarlo a servicios y recursos.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-050101-registrar-empleado.png" alt="Diagrama de actividades para registrar un empleado" width="900">
+  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-050101-registrar-empleado.png" alt="Diagrama de actividades para registrar un empleado" width="420">
 </p>
 
 ### HU-030202 — Asignar empleados y recursos a un servicio
@@ -106,7 +106,7 @@ Las siguientes historias y flujos se transcriben del documento de entrega del Sp
 5. El sistema muestra un resumen para confirmar. Si hay asignaciones duplicadas, informa el error; si no, guarda y muestra las asignaciones del servicio.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-030202-asignar-empleados-recursos.png" alt="Diagrama de actividades para asignar empleados y recursos a un servicio" width="900">
+  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-030202-asignar-empleados-recursos.png" alt="Diagrama de actividades para asignar empleados y recursos a un servicio" width="420">
 </p>
 
 ### HU-020202 — Configurar horario de atención del negocio
@@ -121,7 +121,7 @@ Las siguientes historias y flujos se transcriben del documento de entrega del Sp
 4. Si el horario es válido, guarda el negocio con su horario, muestra la confirmación y deja el horario visible en la información del negocio.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-020202-horario-negocio.png" alt="Diagrama de actividades para configurar el horario de atención del negocio" width="900">
+  <img src="https://raw.githubusercontent.com/hawrisson350/EBP07-API-2026-2-BookingNow/main/docs/wiki/media/sprint-2/HU-020202-horario-negocio.png" alt="Diagrama de actividades para configurar el horario de atención del negocio" width="420">
 </p>
 
 ## Arquitectura seleccionada
