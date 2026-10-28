@@ -33,6 +33,7 @@ Universidad de Antioquia - Facultad de Ingeniería - Ingeniería de Sistemas
 - [Repositorio](#repositorio)
 - [Estado del proyecto](#estado-del-proyecto)
 - [Entrega del Sprint 1](Sprint_1.md)
+- [Entrega del Sprint 2](Sprint_2.md)
 
 ---
 
@@ -109,3 +110,7 @@ proveedor.
 ## Entrega del Sprint 1
 
 La documentación detallada, los mockups, diagramas, evidencias y anexos del primer sprint se encuentran en [Sprint_1.md](Sprint_1.md).
+
+## Entrega del Sprint 2
+
+La documentación del objetivo, las historias de usuario, los diagramas y las decisiones de arquitectura del segundo sprint se encuentra en [Sprint_2.md](Sprint_2.md).
