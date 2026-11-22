@@ -8,5 +8,8 @@ services:
     environment:
       PORT: "8080"
       SPRING_PROFILES_ACTIVE: cloud
+      BOOKINGNOW_AUDIT_DIRECTORY: /app/logs
+    volumes:
+      - ./bookingnow-logs:/app/logs
     mem_limit: 512m
     restart: unless-stopped

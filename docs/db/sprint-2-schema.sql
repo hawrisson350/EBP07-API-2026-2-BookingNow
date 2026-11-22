@@ -54,10 +54,18 @@ CREATE TABLE IF NOT EXISTS bookingnow.reservas (
     id_recurso bigint REFERENCES bookingnow.recursos(id_recurso),
     fecha date NOT NULL,
     hora time NOT NULL,
-    estado varchar(32) NOT NULL CHECK (estado IN ('PENDIENTE_CONFIRMACION','CONFIRMADA','CANCELADA')),
-    fecha_creacion timestamp with time zone NOT NULL
+    estado varchar(32) NOT NULL CHECK (estado IN ('PENDIENTE_CONFIRMACION','ACTIVA','CONFIRMADA','COMPLETADA','CANCELADA','CANCELADA_POR_EL_PROVEEDOR','NO_ASISTIO')),
+    fecha_creacion timestamp with time zone NOT NULL,
+    recordatorio_procesado_at timestamp with time zone
 );
+-- Extiende de forma segura el catálogo para las consultas y transiciones del Sprint 3.
+-- No modifica ni elimina filas existentes. Debe revisarlo/aplicarlo el repositorio de BD.
+ALTER TABLE bookingnow.reservas DROP CONSTRAINT IF EXISTS reservas_estado_check;
+ALTER TABLE bookingnow.reservas ADD CONSTRAINT reservas_estado_check
+    CHECK (estado IN ('PENDIENTE_CONFIRMACION','ACTIVA','CONFIRMADA','COMPLETADA','CANCELADA','CANCELADA_POR_EL_PROVEEDOR','NO_ASISTIO'));
+ALTER TABLE bookingnow.reservas ADD COLUMN IF NOT EXISTS recordatorio_procesado_at timestamp with time zone;
 CREATE INDEX IF NOT EXISTS ix_reservas_fecha_hora ON bookingnow.reservas(fecha,hora);
+CREATE INDEX IF NOT EXISTS ix_reservas_recordatorios ON bookingnow.reservas(recordatorio_procesado_at,fecha,hora) WHERE estado IN ('ACTIVA','CONFIRMADA');
 CREATE INDEX IF NOT EXISTS ix_reservas_empleado_fecha ON bookingnow.reservas(id_empleado,fecha);
 CREATE INDEX IF NOT EXISTS ix_reservas_recurso_fecha ON bookingnow.reservas(id_recurso,fecha);
 

@@ -1,8 +1,14 @@
 HELP.md
 
+# Variables/secretos locales; mantener .env.example como plantilla sin secretos.
+.env
+.env.*
+!.env.example
+
 # Archivos de referencia locales (Word, Excel, Markdown, etc.)
 /workspace/
 target/
+/bookingnow-logs/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

@@ -1,124 +1,80 @@
-# Render + Supabase
+# Despliegue de BookingNow en AWS
 
-La API se despliega con `render.yaml`. Supabase aloja PostgreSQL por separado.
-El perfil `cloud` valida el esquema; no crea ni modifica tablas. Las migraciones
-deben mantenerse en el repositorio de BD del equipo.
+## Arquitectura actual
 
-## 1. Preparar Supabase
+- **API y React:** una instancia EC2 de AWS, accesible en `http://3.136.161.165:8080`.
+- **Base de datos:** PostgreSQL en Supabase; la EC2 se conecta por JDBC.
+- **Correo:** Resend. `RESEND_API_KEY` y `RESEND_FROM` se configuran solo en el entorno del servidor.
+- **Autenticación:** JWT Bearer. Las rutas de auditoría requieren el rol `ADMINISTRADOR`.
 
-Crear un proyecto Free llamado BookingNow y guardar su contraseña de base de
-datos. Elegir una región cercana a la de Render. No se requieren API keys de
-Supabase para JDBC.
+El perfil cloud usa el esquema `bookingnow` y valida su estructura; no aplica
+migraciones automáticamente. Antes de desplegar cambios de base de datos,
+coordinar y aplicar el SQL del repositorio de BD. Para el Sprint 3, revisar
+`docs/db/sprint-2-schema.sql`, incluido el campo de recordatorio.
 
-El contrato del Sprint 1 está en [db/sprint-1-schema.sql](db/sprint-1-schema.sql):
-cuentas, usuario administrador, registro global de correos, negocios, galería y servicios. Es una base
-para una **BD nueva**, no una migración de instalaciones existentes. Coordinar
-su aplicación con el repositorio de BD antes de iniciar el perfil cloud.
+## Despliegue en EC2
 
-Si ya existen cuentas, preparar una migración que resuelva correos/NIT/razones
-sociales duplicadas, complete `estado` y `razon_social_normalizada`, y rellene
-`correos_registrados` con el tipo correcto. Normalizar correos a minúsculas y razón
-social como la API (recortar, colapsar espacios y pasar a minúsculas). Hacerlo
-antes de habilitar el nuevo login: este usa el registro global para identificar
-el rol. `CREATE TABLE IF NOT EXISTS` no actualiza columnas ni migra datos.
-El esquema inicial y las pruebas de registro/login de Cliente y Proveedor ya se
-ejecutaron contra el proyecto Supabase del equipo. Para añadir `Usuario` y el
-administrador, ejecutar ahora [db/initial-admin.sql](db/initial-admin.sql) en SQL
-Editor y reiniciar la API. La fixture también se valida en H2; falta repetir una
-prueba PostgreSQL del flujo de administrador después de aplicar esa migración.
+El despliegue actual usa un contenedor Docker basado en Java 21. El contenedor se
+ejecuta con reinicio automático y red del host para que Spring registre la IP
+de origen que llega a EC2. El proceso corre con UID `10001`, límite de memoria
+de 512 MB y puerto 8080.
 
-El esquema `bookingnow` es para JDBC: no agregarlo a los esquemas expuestos por
-la Data API de Supabase. Las validaciones de correo, nombre de usuario y contrasena estan en la API.
+La PEM se conserva localmente y no forma parte del repositorio. Para entrar,
+usar SSH con el usuario `ubuntu` y la IP vigente de la instancia. No pegar ni
+subir la PEM al proyecto.
 
-Render Free no dispone de la ruta IPv6 requerida por la conexión directa de
-Supabase. Por eso este proyecto usa **Connect > Transaction pooler** (pooler compartido), que ofrece
-acceso IPv4 por el puerto **6543**. El `render.yaml` ya contiene el host y
-usuario del pooler; solo la contraseña sigue siendo una variable de Render. El JDBC usa
-`sslmode=require&prepareThreshold=0`, como indica Supabase para el pooler compartido de transacciones.
+Al preparar un despliegue nuevo:
 
-## 2. Publicar la API en Render
+1. Compilar el backend con Java 21: `./mvnw -DskipTests package` (o `mvnw.cmd`
+   en Windows). Esta instrucción compila, no ejecuta pruebas.
+2. Copiar el JAR a la EC2 sin modificar su `.env` remoto.
+3. Ejecutar el contenedor con perfil `cloud`, el `.env` que ya existe en EC2 y
+   `BOOKINGNOW_AUDIT_DIRECTORY=/app/logs`.
+4. Montar `/home/ubuntu/bookingnow-logs` del host en `/app/logs` del contenedor,
+   asegurar escritura para UID `10001`, y mantener el reinicio automático.
+5. Verificar `/health`, la página `/` y que `/api/admin/auditoria` devuelve 401
+   cuando se consulta sin token.
 
-Los cambios, incluido `render.yaml`, deben estar en la rama de GitHub que se
-desplegará: `https://github.com/hawrisson350/EBP07-API-2026-2-BookingNow`.
+El servicio actual de Docker se llama `bookingnow-api`; su contenedor anterior
+se mantiene detenido como opción de recuperación. La dirección pública puede
+cambiar si AWS reasigna la IP. Confirmarla en EC2 antes de compartirla.
 
-1. En Render, crear un **Blueprint** y conectar ese repositorio y la rama elegida.
-2. Revisar que `bookingnow-api` use el plan **Free**.
-3. Completar las variables solicitadas:
+## Logs y auditoría
 
-| Variable | Valor |
+La aplicación mantiene dos archivos JSON Lines en el volumen persistente:
+
+| Archivo | Contenido |
 |---|---|
-| `DB_URL` | Lo define `render.yaml` con el Transaction pooler de Supabase |
-| `DB_USERNAME` | Lo define `render.yaml` con el usuario del pooler |
-| `DB_PASSWORD` | Contraseña de PostgreSQL, no API key |
-| `JWT_SECRET` | Al menos 32 bytes aleatorios en Base64; generar como indica README.md |
-| `CORS_ALLOWED_ORIGINS` | URL HTTPS del frontend, por ejemplo `https://bookingnow-front.onrender.com` |
+| `requests.jsonl` | Fecha, actor cuando está autenticado, ruta, método, estado, duración, IP, agente de usuario y `requestId` de las solicitudes API y `/health`. |
+| `login-attempts.jsonl` | Resultado, rol, correo enmascarado, IP observada, agente de usuario y ruta de los intentos procesados por los endpoints de login. |
 
-La contraseña se guarda por separado, sin incluirla en la URL. `sslmode=require` cifra la conexión; se puede habilitar **Enforce SSL** en Supabase cuando el despliegue haya sido comprobado.
-El Blueprint configura `SPRING_PROFILES_ACTIVE=cloud`, health check `/health`
-y un heap máximo de Java de 256 MB. La JVM también consume memoria fuera del heap:
-hay que comprobar el consumo total dentro de los 512 MB del plan gratuito.
+Cada archivo rota al llegar a 10 MB; se conserva una rotación anterior. El
+backend no registra cuerpos HTTP, contraseñas, tokens ni imágenes Base64. La IP
+reenviada en `X-Forwarded-For` se guarda como referencia, no como origen
+verificado.
 
-El Dockerfile compila y ejecuta las pruebas antes de producir la imagen con
-Java 21. No requiere subir `target` ni ejecutar Docker Compose en Render.
-El puerto se toma de `PORT`, con 8080 como valor local por defecto.
+La pantalla React **Centro de actividad** aparece al iniciar sesión como
+administrador y consulta `GET /api/admin/auditoria` (hasta 200 entradas recientes
+por archivo). No se expone a clientes ni proveedores. Para revisar directamente
+por SSH, consultar los JSONL dentro de `/home/ubuntu/bookingnow-logs`.
 
-## Logs iniciales para diagnóstico
+Los archivos están en el disco de la misma EC2: sirven para la demostración y
+el diagnóstico, pero no son una copia de seguridad independiente. La instancia
+actual estuvo al 99% de uso de disco durante este despliegue. Revisar espacio
+antes de nuevos despliegues; la rotación limita cada archivo, no el uso total de
+Docker ni del sistema.
 
-Render conserva la salida estándar de la API. Cada llamada a `/api/*` y
-`/health` deja `requestId`, método, ruta, estado y duración, sin registrar
-contraseñas, tokens, hashes ni cuerpos JSON. La API responde el mismo valor en
-`X-Request-Id`; el frontend puede enviarlo y luego buscarlo en Render > Logs.
+## Configuración local
 
-El login del administrador también registra un resultado interno seguro:
-`usuario_no_encontrado`, `contrasena_incorrecta`, `cuenta_no_habilitada` o
-`exitoso`. Si el despliegue no arranca, buscar `application_ready`; esa línea
-informa el perfil y orígenes CORS, sin exponer URL ni credenciales de la BD.
-
-## 3. Verificar el despliegue
-
-Con la URL real asignada por Render:
+Copiar `.env.example` a `.env` y completar los datos propios de PostgreSQL,
+`JWT_SECRET` y, si se van a probar correos, `RESEND_API_KEY` y `RESEND_FROM`.
+`.env` está ignorado por Git. No reutilizar claves del historial ni guardar
+credenciales en README, código o capturas.
 
 ```powershell
-$apiUrl = 'https://NOMBRE-ASIGNADO.onrender.com'
-Invoke-RestMethod "$apiUrl/health"
-Invoke-RestMethod "$apiUrl/v3/api-docs"
-```
-
-Health debe devolver `status: UP`; también comprueba la conexión a la BD.
-Si falta la tabla, Hibernate falla al arrancar: aplicar primero la migración.
-Si aparece `Tenant or user not found`, revisar host y usuario del Transaction pooler.
-La API usa JWT Bearer. Ver el flujo de registro/login en README.md.
-Usar datos ficticios mientras se define el modelo final.
-
-## Prueba local con Supabase
-
-Para este proyecto académico, `.env` ya está incluido en el repositorio y Spring
-Boot lo carga automáticamente. Desde la raíz, ejecutar:
-
-```powershell
+Copy-Item .env.example .env
 .\mvnw.cmd spring-boot:run
 ```
 
-También puedes usar `docker compose -f compose.cloud.yaml up --build -d`. Este
-Compose ejecuta solo la API, con límite de 512 MB. `compose.yaml` queda como
-alternativa local con PostgreSQL incluido.
-
-## Referencias
-
-- [Conexiones PostgreSQL en Supabase](https://supabase.com/docs/guides/database/connecting-to-postgres)
-- [Blueprint de Render](https://render.com/docs/blueprint-spec)
-- [Límites gratuitos de Render](https://render.com/docs/free)
-
-Render Free se suspende tras inactividad y tiene cuotas mensuales. Antes de una
-entrega, comprobar que tanto la API como el proyecto Supabase estén activos.
-
-## Modelo de cuentas
-
-Cliente y Proveedor son cuentas independientes. La tabla `usuarios` contiene,
-por ahora, solo cuentas con rol `ADMINISTRADOR`. El perfil cloud requiere las
-tablas del contrato del Sprint 1, incluido el administrador creado por
-`db/initial-admin.sql`.
-
-Los JWT siguen validos tras reinicios si JWT_SECRET no cambia y la cuenta existe y está ACTIVA.
-Los tokens vencen a los 30 minutos por defecto; el frontend debe descartarlos al
-cerrar sesion. No usar en Render la clave incluida en el perfil test.
+Para más información de endpoints y formato para el equipo de React, consultar
+[README.md](../README.md).

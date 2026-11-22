@@ -115,13 +115,51 @@ Authorization: Bearer EL_TOKEN_DEL_LOGIN
 | PUT | `/api/negocios/{idNegocio}/horarios` | Proveedor dueño | Configurar o reemplazar el horario semanal |
 | GET | `/api/negocios/{idNegocio}/horarios` | Proveedor dueño | Consultar horario semanal |
 | PUT | `/api/negocios/{idNegocio}/servicios/{idServicio}/asignaciones` | Proveedor dueño | Reemplazar asignación de empleados y recursos |
-| POST | `/api/reservas` | Cliente | Registrar reserva (el correo de confirmación aún no está conectado) |
+| POST | `/api/reservas` | Cliente | Registrar reserva y encolar su correo de confirmación |
+| GET | `/api/reservas/mias/activas` | Cliente | Consultar reservas propias futuras en estado Activa o Confirmada, ordenadas por fecha/hora ascendente |
+| GET | `/api/reservas/mias/historial` | Cliente | Consultar reservas propias Completadas, Canceladas, Canceladas por el proveedor o No asistió, de la más reciente a la más antigua |
+| POST | `/api/reservas/{idReserva}/cancelacion` | Cliente dueño, proveedor dueño del negocio o administrador | Cancelar con mínimo dos horas de anticipación |
+| POST | `/api/reportes` | Proveedor o administrador | Generar un archivo PDF o Excel desde los filtros enviados |
+
+Las consultas de reservas toman el cliente del JWT; no reciben un ID de cliente por URL ni por parámetros. Devuelven una lista JSON; cuando no hay registros, devuelven `[]` para que React muestre el mensaje vacío correspondiente. Cada elemento incluye `idReserva`, `fecha`, `hora`, `nombreServicio`, `nombreNegocio` y `estado`. Para que el historial incluya reservas completadas, no asistidas o canceladas por el proveedor, el contrato actualizado de `sprint-2-schema.sql` debe aplicarse en PostgreSQL antes del despliegue; la API no modifica la base automáticamente.
+
+La cancelación se permite hasta que falten dos horas para la cita. El cliente solo puede cancelar su reserva; un proveedor solo reservas de sus negocios; el administrador puede cancelar cualquiera. En cancelaciones de proveedor o administrador se debe enviar un motivo. El endpoint no sustituye la confirmación visual que React debe mostrar antes de pedir la cancelación.
+
+```http
+POST /api/reservas/15/cancelacion
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+Para el cliente, el cuerpo puede omitirse. Proveedor/administrador envían, por ejemplo, `{ "motivo": "El proveedor no estará disponible" }`.
+
+### Generar un reporte
+
+`POST /api/reportes` recibe JSON y responde con un archivo adjunto. El administrador puede consultar globalmente; las consultas del proveedor se limitan siempre a sus negocios.
+
+```json
+{
+  "tipoReporte": "RESERVAS",
+  "fechaDesde": "2026-11-01",
+  "fechaHasta": "2026-11-30",
+  "idNegocio": 1,
+  "idServicio": null,
+  "idRecurso": null,
+  "estado": null,
+  "formato": "EXCEL"
+}
+```
+
+`tipoReporte` acepta `RESERVAS` o `USO_SERVICIOS_RECURSOS`; `formato` acepta `PDF` o `EXCEL` (se descarga como `.xlsx`). Los dos límites de fecha se envían juntos o se omiten. Los filtros de negocio, servicio, recurso y estado son opcionales. En el reporte de uso, la API agrupa por servicio y recurso y cuenta reservas. Un reporte sin coincidencias contiene un mensaje, no un error. El archivo se construye en memoria y se devuelve en la respuesta; no se almacena.
+
+La confirmación y cancelación publican un email después de confirmar la transacción de base de datos. El adaptador usa Resend y requiere configurar `RESEND_API_KEY` y `RESEND_FROM` (un remitente permitido/verificado en Resend). `RESEND_BASE_URL` es opcional y por defecto usa `https://api.resend.com`. Para trabajar localmente, cada integrante copia `.env.example` a `.env` y agrega su propia clave y remitente; `.env` está excluido de Git. Si Resend no está configurado, el backend continúa sin enviar y lo registra en el log.
+
+Con Resend configurado, el proceso automático revisa cada cinco minutos las reservas activas/confirmadas que ocurren dentro de las siguientes 24 horas y envía el recordatorio una sola vez. Si alguien reserva con menos de 24 horas de anticipación, el correo se procesa en la siguiente revisión. Se marca como procesado antes de publicarlo para evitar duplicados; por ahora un envío fallido no se reintenta.
 
 El contrato para las nuevas tablas de recursos, empleados, horarios, asignaciones,
 imágenes de servicio y reservas está en [sprint-2-schema.sql](docs/db/sprint-2-schema.sql).
 Debe aplicarlo el equipo responsable de PostgreSQL antes de usar estos endpoints en AWS.
-La API no ejecuta ese SQL automáticamente. Las reservas quedan en estado `CONFIRMADA` al finalizar el registro. El correo automático
-que solicita la HU requiere configurar un proveedor de correo y todavía no está conectado.
+La API no ejecuta ese SQL automáticamente. Las reservas quedan en estado `CONFIRMADA` al finalizar el registro. El correo se despacha tras confirmar la transacción; requiere configurar Resend para enviarse realmente.
 
 ## 6. Datos de cada formulario
 
@@ -303,7 +341,7 @@ POST /api/reservas
 { "idServicio": 1, "idEmpleado": 1, "idRecurso": 1, "fecha": "2026-10-20", "hora": "09:00" }
 ```
 
-Las asignaciones de empleado y recurso se envían cuando el servicio las requiere. La API vuelve a validar la disponibilidad al guardar. El correo de confirmación todavía no está integrado.
+Las asignaciones de empleado y recurso se envían cuando el servicio las requiere. La API vuelve a validar la disponibilidad al guardar. El correo de confirmación se enviará cuando Resend esté configurado.
 
 ## 7. Cómo tratar los errores
 
@@ -359,17 +397,16 @@ Requiere Java 21. En PowerShell, desde la carpeta raíz:
 
 Esta base es temporal: al cerrar la terminal con `Ctrl+C`, se borran sus datos.
 
-### Usar Supabase
+### Usar PostgreSQL/Supabase
 
-El repositorio ya incluye `.env` con la configuración académica de Supabase.
-No necesitas escribir variables de entorno: abre PowerShell en la raíz y ejecuta:
+Copia `.env.example` como `.env` y completa la URL, usuario y contraseña de la base de datos a la que tengas acceso, además de una clave JWT local. El archivo `.env` no se sube a Git. En PowerShell:
 
 ```powershell
+Copy-Item .env.example .env
 .\mvnw.cmd spring-boot:run
 ```
 
-El archivo activa el perfil `cloud`, que usa Supabase y valida las tablas ya
-creadas.
+El perfil `cloud` valida las tablas existentes. Para probar el envío de correos localmente, agrega al `.env` tu propia `RESEND_API_KEY` y `RESEND_FROM`. Los integrantes que consumen el backend ya desplegado no necesitan la clave de Resend; esta se configura solo en el servidor.
 
 ### API publicada en AWS
 
@@ -385,6 +422,12 @@ El frontend React debe usar esa dirección como base de la API al estar publicad
 En cada respuesta la API devuelve el encabezado `X-Request-Id`. Si el frontend
 incluye uno válido, la API conserva ese mismo valor. Compártelo con backend al
 reportar un error: permite encontrar la solicitud exacta en los logs de AWS.
+
+### Centro de actividad para administrador
+
+El backend guarda `requests.jsonl` y `login-attempts.jsonl` localmente en `./logs` (en Docker, el volumen `bookingnow-logs`). En la EC2 actual están en `/home/ubuntu/bookingnow-logs`. Cada archivo rota al llegar a 10 MB y conserva un archivo anterior. La pantalla **Centro de actividad** aparece al iniciar sesión como administrador y consulta `GET /api/admin/auditoria`. Registra ruta, método, código HTTP, duración, actor cuando el filtro de seguridad lo identifica, IP observada, agente de usuario y `requestId`. Para los accesos también guarda resultado, rol y correo enmascarado. No guarda cuerpos HTTP, contraseñas ni tokens.
+
+`X-Forwarded-For` se registra como dato informativo; solo confíes en él si el proxy de EC2 está configurado para sobrescribir ese encabezado. El backend no devuelve los logs a clientes o proveedores. Para que persistan en EC2, el directorio montado debe poder escribirse con UID `10001` del contenedor.
 
 Para revisar los logs, el equipo de backend entra a la instancia EC2 por SSH y
 consulta la terminal o el servicio con el que ejecutó la API. Los logs nunca

@@ -28,7 +28,7 @@ trabajo; no ejecutan agentes, pruebas ni despliegues automaticamente.
 
 Las historias recibidas tienen una ficha en
 [detail-user-stories](stories/detail-user-stories/). Incluyen los requisitos recibidos en `workspace/Recuento HU.docx`.
-Sprint 1 contiene cinco historias y Sprint 2 contiene siete historias identificadas desde Azure DevOps. El análisis y la implementación se registran por separado; una compilación no acredita por sí sola los criterios de aceptación.
+Sprint 1 contiene cinco historias y Sprint 2 contiene siete historias identificadas desde Azure DevOps. El inventario y análisis inicial de Sprint 3 tiene diez historias, con su fuente y enlaces a Azure. El análisis y la implementación se registran por separado; una compilación no acredita por sí sola los criterios de aceptación.
 Para otra historia, copiar [US_Template.md](stories/US_Template.md).
 
 Conservar el identificador oficial `HU-XXXXXX` en todos sus documentos:
@@ -38,7 +38,7 @@ Conservar el identificador oficial `HU-XXXXXX` en todos sus documentos:
 - `implementation/HU-XXXXXX-implementation.md`: cambios realmente realizados.
 - `testing/HU-XXXXXX-testing.md`: verificaciones y resultados reales.
 
-Para Sprint 2 también hay un resumen de estimación en `analysis/SPRINT-2-estimacion-y-alcance.md` y resúmenes de implementación/verificación por sprint. HU-030101 está duplicada en el tablero; usar el título y PBI para distinguir sus fichas.
+Para Sprint 2 también hay un resumen de estimación en `analysis/SPRINT-2-estimacion-y-alcance.md` y resúmenes de implementación/verificación por sprint. Para Sprint 3 ver `analysis/SPRINT-3-alcance-y-brechas.md` e `implementation/SPRINT-3.md`; usar ID de Azure y título porque el código HU-060102 aparece asociado a otra descripción en el historial del tablero. HU-030101 también está duplicada en el tablero; usar el título y PBI para distinguir sus fichas.
 
 Los archivos `TEMPLATE.md` de cada etapa son plantillas, no evidencia completada.
 
