@@ -423,9 +423,11 @@ En cada respuesta la API devuelve el encabezado `X-Request-Id`. Si el frontend
 incluye uno válido, la API conserva ese mismo valor. Compártelo con backend al
 reportar un error: permite encontrar la solicitud exacta en los logs de AWS.
 
-### Centro de actividad para administrador
+### Panel de logs del backend
 
-El backend guarda `requests.jsonl` y `login-attempts.jsonl` localmente en `./logs` (en Docker, el volumen `bookingnow-logs`). En la EC2 actual están en `/home/ubuntu/bookingnow-logs`. Cada archivo rota al llegar a 10 MB y conserva un archivo anterior. La pantalla **Centro de actividad** aparece al iniciar sesión como administrador y consulta `GET /api/admin/auditoria`. Registra ruta, método, código HTTP, duración, actor cuando el filtro de seguridad lo identifica, IP observada, agente de usuario y `requestId`. Para los accesos también guarda resultado, rol y correo enmascarado. No guarda cuerpos HTTP, contraseñas ni tokens.
+El backend incluye en `/` una página HTML pequeña e independiente para consultar logs; no es parte del frontend React del equipo. Inicia sesión con una cuenta de administrador y el panel consulta `GET /api/admin/auditoria`.
+
+El backend guarda `requests.jsonl` y `login-attempts.jsonl` localmente en `./logs` (en Docker, el volumen `bookingnow-logs`). En la EC2 actual están en `/home/ubuntu/bookingnow-logs`. Cada archivo rota al llegar a 10 MB y conserva un archivo anterior. Los registros incluyen ruta, método, código HTTP, duración, actor cuando el filtro de seguridad lo identifica, IP observada, agente de usuario y `requestId`. Para los accesos también guarda resultado, rol y correo enmascarado. No guarda cuerpos HTTP, contraseñas ni tokens.
 
 `X-Forwarded-For` se registra como dato informativo; solo confíes en él si el proxy de EC2 está configurado para sobrescribir ese encabezado. El backend no devuelve los logs a clientes o proveedores. Para que persistan en EC2, el directorio montado debe poder escribirse con UID `10001` del contenedor.
 

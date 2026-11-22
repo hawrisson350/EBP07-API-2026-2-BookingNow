@@ -2,7 +2,9 @@
 
 ## Arquitectura actual
 
-- **API y React:** una instancia EC2 de AWS, accesible en `http://3.136.161.165:8080`.
+- **API:** una instancia EC2 de AWS, accesible en `http://3.136.161.165:8080`.
+- **Frontend React del equipo:** publicado por separado en Vercel.
+- **Panel de logs:** página HTML pequeña incluida en este repositorio backend, disponible en la raíz de la URL de la API (`/`).
 - **Base de datos:** PostgreSQL en Supabase; la EC2 se conecta por JDBC.
 - **Correo:** Resend. `RESEND_API_KEY` y `RESEND_FROM` se configuran solo en el entorno del servidor.
 - **Autenticación:** JWT Bearer. Las rutas de auditoría requieren el rol `ADMINISTRADOR`.
@@ -53,10 +55,12 @@ backend no registra cuerpos HTTP, contraseñas, tokens ni imágenes Base64. La I
 reenviada en `X-Forwarded-For` se guarda como referencia, no como origen
 verificado.
 
-La pantalla React **Centro de actividad** aparece al iniciar sesión como
-administrador y consulta `GET /api/admin/auditoria` (hasta 200 entradas recientes
-por archivo). No se expone a clientes ni proveedores. Para revisar directamente
-por SSH, consultar los JSONL dentro de `/home/ubuntu/bookingnow-logs`.
+El **Centro de logs** es una página HTML sencilla servida por el mismo backend
+en `/`; no forma parte del frontend React del equipo. El administrador inicia
+sesión ahí y la página consulta `GET /api/admin/auditoria` (hasta 200 entradas
+recientes por archivo). La consulta está protegida por el rol administrador.
+Para revisar directamente por SSH, consultar los JSONL dentro de
+`/home/ubuntu/bookingnow-logs`.
 
 Los archivos están en el disco de la misma EC2: sirven para la demostración y
 el diagnóstico, pero no son una copia de seguridad independiente. La instancia

@@ -39,7 +39,7 @@ public class SecurityConfig {
             .addFilterAfter(requestLogFilter, BearerTokenAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/health", "/error").permitAll()
-                .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
+                .requestMatchers("/", "/index.html", "/favicon.ico").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/servicios", "/api/servicios/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/clientes", "/api/proveedores",
