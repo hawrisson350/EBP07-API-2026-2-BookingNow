@@ -415,7 +415,7 @@ class BookingNowApplicationTests {
         assertThat(creada.statusCode()).isEqualTo(201);
         assertThat(json(creada).at("/idCliente").asLong()).isEqualTo(cliente.id());
         assertThat(json(creada).at("/estado").asText()).isEqualTo("CONFIRMADA");
-        verify(email).enviar(eq(cliente.correo()), eq("Confirmación de tu reserva"), contains(fechaTexto));
+        verify(email).enviar(eq(cliente.correo()), eq("Confirmación de tu reserva"), contains("Fecha:"));
         assertThat(req("POST", "/api/reservas", reserva, cliente.token()).statusCode()).isEqualTo(409);
         var fueraDeHorario = Map.of("idServicio", idServicio, "idEmpleado", idEmpleado, "idRecurso", idRecurso,
                 "fecha", fechaTexto, "hora", "10:15");

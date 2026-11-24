@@ -40,7 +40,8 @@ public class ResendEmailAdapter implements EnviarEmailPort {
                 "from", from,
                 "to", List.of(destinatario),
                 "subject", asunto,
-                "text", contenido);
+                "text", contenido,
+                "html", AgendaEmailHtml.render(asunto, contenido));
 
         client.post()
                 .uri("/emails")

@@ -29,9 +29,11 @@ public class ProcesarRecordatoriosService implements ProcesarRecordatoriosUseCas
         for (var reserva : reservas.buscarRecordatoriosPendientes(limite)) {
             if (reservas.marcarRecordatorioProcesado(reserva.idReserva(), Instant.now())) {
                 String asunto = "Recordatorio de tu reserva";
-                String contenido = "Hola " + reserva.nombreCliente() + ", te recordamos tu reserva de "
-                        + reserva.nombreServicio() + " en " + reserva.nombreNegocio() + " para el "
-                        + reserva.fecha() + " a las " + reserva.hora() + ".";
+                String contenido = "Tu cita se acerca. Estos son los detalles de tu reserva:\n\n"
+                        + "Servicio: " + reserva.nombreServicio() + "\n"
+                        + "Negocio: " + reserva.nombreNegocio() + "\n"
+                        + "Fecha: " + FormatoAgendaCorreo.fecha(reserva.fecha()) + "\n"
+                        + "Hora: " + FormatoAgendaCorreo.hora(reserva.hora());
                 email.publicar(reserva.correoCliente(), asunto, contenido);
                 procesadas++;
             }

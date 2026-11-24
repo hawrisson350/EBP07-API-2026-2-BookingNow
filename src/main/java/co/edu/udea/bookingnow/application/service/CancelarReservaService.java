@@ -53,10 +53,15 @@ public class CancelarReservaService implements CancelarReservaUseCase {
         Reserva cancelada = reservas.actualizarEstado(idReserva, estadoNuevo);
         String asunto = "Actualización de tu reserva";
         String contenido = clientePropietario
-                ? "Tu reserva ha sido cancelada correctamente."
-                : "Tu reserva en " + detalle.nombreNegocio() + " para el servicio " + detalle.nombreServicio()
-                    + " fue cancelada por " + (proveedorPropietario ? "el proveedor" : "un administrador")
-                    + ". Motivo: " + motivo + ". Disculpa las molestias; puedes comunicarte con el negocio para reprogramar.";
+                ? "Tu reserva ha sido cancelada correctamente.\n\nFecha: " + FormatoAgendaCorreo.fecha(detalle.fecha())
+                    + "\nHora: " + FormatoAgendaCorreo.hora(detalle.hora())
+                : "Tu reserva fue cancelada por " + (proveedorPropietario ? "el proveedor" : "un administrador")
+                    + ".\n\nNegocio: " + detalle.nombreNegocio()
+                    + "\nServicio: " + detalle.nombreServicio()
+                    + "\nFecha: " + FormatoAgendaCorreo.fecha(detalle.fecha())
+                    + "\nHora: " + FormatoAgendaCorreo.hora(detalle.hora())
+                    + "\nMotivo: " + motivo
+                    + "\nDisculpa las molestias; puedes comunicarte con el negocio para reprogramar.";
         email.publicar(detalle.correoCliente(), asunto, contenido);
         return cancelada;
     }
