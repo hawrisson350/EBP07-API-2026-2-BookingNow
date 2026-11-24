@@ -425,7 +425,7 @@ reportar un error: permite encontrar la solicitud exacta en los logs de AWS.
 
 ### Panel de logs del backend
 
-El backend incluye en `/` una página HTML pequeña e independiente para consultar logs; no es parte del frontend React del equipo. Inicia sesión con una cuenta de administrador y el panel consulta `GET /api/admin/auditoria`.
+El backend incluye en `/` una página HTML pequeña e independiente para consultar logs; no es parte del frontend React del equipo. Inicia sesión con una cuenta de administrador y el panel consulta `GET /api/admin/auditoria`. Permite filtrar por servicio/ruta y omite líneas dañadas del JSONL sin interrumpir la consulta.
 
 El backend guarda `requests.jsonl` y `login-attempts.jsonl` localmente en `./logs` (en Docker, el volumen `bookingnow-logs`). En la EC2 actual están en `/home/ubuntu/bookingnow-logs`. Cada archivo rota al llegar a 10 MB y conserva un archivo anterior. Los registros incluyen ruta, método, código HTTP, duración, actor cuando el filtro de seguridad lo identifica, IP observada, agente de usuario y `requestId`. Para los accesos también guarda resultado, rol y correo enmascarado. No guarda cuerpos HTTP, contraseñas ni tokens.
 

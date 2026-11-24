@@ -10,7 +10,7 @@
     * { box-sizing:border-box } body { margin:0 } header { background:#13243a; color:white; padding:22px max(22px,calc((100vw - 1440px)/2)); display:flex; justify-content:space-between; align-items:center; gap:20px }
     h1 { margin:0;font-size:22px } header p { margin:5px 0 0;color:#bdcad8;font-size:13px }
     main { max-width:1440px;margin:28px auto;padding:0 22px } .card { background:white;border:1px solid #e1e7ef;border-radius:12px;padding:20px;margin-bottom:22px;box-shadow:0 3px 12px #172b4d0b }
-    .login { max-width:440px;margin:8vh auto } label { display:block;font-size:13px;font-weight:650;margin:12px 0 6px } input { width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:7px;font:inherit }
+    .login { max-width:440px;margin:8vh auto } label { display:block;font-size:13px;font-weight:650;margin:12px 0 6px } input,select { width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:7px;font:inherit }
     button { border:0;background:#2864c5;color:white;padding:10px 15px;border-radius:7px;font-weight:650;cursor:pointer } button.secondary { background:#e9eff8;color:#203c65 } .actions { display:flex;gap:10px;align-items:center;flex-wrap:wrap } .actions input { max-width:380px }
     .hidden { display:none!important } .message { min-height:20px;color:#a12b2b;font-size:13px;margin-top:10px } h2 { font-size:18px;margin:0 0 14px } .hint { font-size:12px;color:#617083;margin-top:15px }
     .table-wrap { overflow:auto;max-height:420px;border:1px solid #e4eaf1;border-radius:8px } table { width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap } th { text-align:left;background:#edf2f8;color:#314258;position:sticky;top:0 } td,th { padding:9px 11px;border-bottom:1px solid #e9edf2 } tr:hover td { background:#f8faff } .status-ok { color:#18794e }.status-fail {color:#b42318}.count { color:#64748b;font-size:12px }
@@ -30,7 +30,7 @@
     </section>
 
     <section id="dashboard" class="hidden">
-      <div class="card"><div class="actions"><h2 style="margin:0">Actividad reciente</h2><button id="refresh" class="secondary">Actualizar</button><input id="filter" type="search" placeholder="Filtrar por ruta, IP, usuario o request ID"></div><p class="hint">Se muestran hasta 200 entradas por archivo. Los cuerpos HTTP, contraseñas y tokens no se guardan.</p></div>
+      <div class="card"><div class="actions"><h2 style="margin:0">Actividad reciente</h2><button id="refresh" class="secondary">Actualizar</button><select id="service-filter" aria-label="Filtrar por servicio"><option value="">Todos los servicios</option><option value="/api/auth">Autenticación</option><option value="/api/clientes">Clientes</option><option value="/api/proveedores">Proveedores</option><option value="/api/negocios">Negocios</option><option value="/api/servicios">Servicios</option><option value="/api/reservas">Reservas</option><option value="/api/empleados">Empleados</option><option value="/api/recursos">Recursos</option><option value="/api/horarios-atencion">Horarios</option><option value="/api/reportes">Reportes</option><option value="/api/admin">Administración</option></select><input id="filter" type="search" placeholder="Buscar por ruta, IP, usuario o request ID"></div><p class="hint">Se muestran hasta 200 entradas por archivo. Las líneas de log dañadas se omiten y se cuentan en el aviso. Los cuerpos HTTP, contraseñas y tokens no se guardan.</p></div>
       <section class="card"><h2>Peticiones HTTP <span id="request-count" class="count"></span></h2><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Actor</th><th>Método</th><th>Ruta</th><th>Estado</th><th>Duración</th><th>IP observada</th><th>Agente</th><th>Request ID</th></tr></thead><tbody id="requests"></tbody></table></div></section>
       <section class="card"><h2>Intentos de inicio de sesión <span id="login-count" class="count"></span></h2><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Resultado</th><th>Usuario</th><th>Rol</th><th>Estado</th><th>IP observada</th><th>Agente</th><th>Ruta</th></tr></thead><tbody id="logins"></tbody></table></div></section>
       <div id="load-message" class="message" role="status"></div>
@@ -40,11 +40,28 @@
   let token = "";
   let requestRows = [];
   let loginRows = [];
+  let malformedRows = 0;
   const $ = (id) => document.getElementById(id);
   const safe = (value) => String(value ?? "");
   const esc = (value) => safe(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\"","&quot;").replaceAll("'","&#39;");
   const cell = (row, key, cls="") => `<td class="${cls}">${esc(row[key])}</td>`;
-  const filtered = (rows) => { const q=$("filter").value.trim().toLowerCase(); return rows.filter(r=>!q||Object.values(r).some(v=>safe(v).toLowerCase().includes(q))); };
+  function parseRows(lines) {
+    const rows=[]; let malformed=0;
+    for(const line of Array.isArray(lines)?lines:[]) {
+      try { const row=JSON.parse(line); if(row&&typeof row==="object"&&!Array.isArray(row)) rows.push(row); else malformed++; }
+      catch { malformed++; }
+    }
+    return {rows,malformed};
+  }
+  const filtered = (rows) => {
+    const q=$("filter").value.trim().toLowerCase(), service=$("service-filter").value;
+    return rows.filter(r=>{
+      const path=safe(r.path).split("?")[0];
+      const matchesService=!service||path===service||path.startsWith(service+"/");
+      const matchesText=!q||Object.values(r).some(v=>safe(v).toLowerCase().includes(q));
+      return matchesService&&matchesText;
+    });
+  };
   function render() {
     const req=filtered(requestRows), log=filtered(loginRows);
     $("request-count").textContent=`(${req.length})`; $("login-count").textContent=`(${log.length})`;
@@ -57,7 +74,10 @@
       const res=await fetch("/api/admin/auditoria?limite=200",{headers:{Authorization:`Bearer ${token}`}});
       if(res.status===401||res.status===403){token="";$("dashboard").classList.add("hidden");$("login-card").classList.remove("hidden");throw new Error("La sesión venció o no tiene rol de administrador. Inicia sesión de nuevo.");}
       if(!res.ok) throw new Error(`No se pudieron cargar los logs (${res.status}).`);
-      const data=await res.json(); requestRows=(data.peticiones||[]).map(JSON.parse).reverse(); loginRows=(data.iniciosSesion||[]).map(JSON.parse).reverse(); render(); $("load-message").textContent="";
+      const data=await res.json();
+      const requests=parseRows(data.peticiones), logins=parseRows(data.iniciosSesion);
+      requestRows=requests.rows.reverse(); loginRows=logins.rows.reverse(); malformedRows=requests.malformed+logins.malformed; render();
+      $("load-message").textContent=malformedRows?`Se cargaron los registros válidos; se omitieron ${malformedRows} línea(s) dañada(s) del archivo de logs.`:"Logs actualizados correctamente.";
     } catch(e){$("load-message").textContent=e.message||"Error consultando el servicio.";}
   }
   $("login-form").addEventListener("submit",async e=>{
@@ -68,8 +88,8 @@
       token=data.accessToken; $("password").value=""; $("login-card").classList.add("hidden");$("dashboard").classList.remove("hidden");$("logout").classList.remove("hidden");await load();
     } catch(err){$("login-message").textContent=err.message||"No fue posible iniciar sesión.";}
   });
-  $("refresh").addEventListener("click",load); $("filter").addEventListener("input",render);
-  $("logout").addEventListener("click",()=>{token="";requestRows=[];loginRows=[];$("dashboard").classList.add("hidden");$("login-card").classList.remove("hidden");$("logout").classList.add("hidden");});
+  $("refresh").addEventListener("click",load); $("filter").addEventListener("input",render); $("service-filter").addEventListener("change",render);
+  $("logout").addEventListener("click",()=>{token="";requestRows=[];loginRows=[];malformedRows=0;$("dashboard").classList.add("hidden");$("login-card").classList.remove("hidden");$("logout").classList.add("hidden");});
 </script>
 </body>
 </html>
