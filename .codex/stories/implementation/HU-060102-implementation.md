@@ -2,10 +2,10 @@
 
 - Azure PBI 33, Sprint 3.
 - Endpoint: `POST /api/reservas/{idReserva}/cancelacion`; acepta opcionalmente `{ "motivo": "..." }`.
-- Autorización: cliente dueño de la reserva, proveedor dueño del negocio o administrador. Motivo requerido para proveedor/administrador.
-- Regla implementada: solo estados `ACTIVA`/`CONFIRMADA`; se permite cancelar hasta dos horas antes (incluido exactamente el límite). El cliente cancela a `CANCELADA`; el proveedor a `CANCELADA_POR_EL_PROVEEDOR`; el administrador a `CANCELADA`.
-- Persistencia transaccional con bloqueo de la reserva. Los dos estados cancelados se excluyen de disponibilidad. Email se publica para envío después del commit.
-- Evidencia: puerto de entrada, servicio de aplicación, modelo de lectura para autorización, repositorio JPA y controlador REST. Contrato de estados actualizado en `docs/db/sprint-2-schema.sql`.
-- Verificación: `mvnw -DskipTests compile` terminó en `BUILD SUCCESS`; no se ejecutaron pruebas de comportamiento ni PostgreSQL.
-- Pendiente: diálogo de confirmación en React; aplicar contrato SQL en la base; pruebas de titularidad, roles, límite horario, estado e impacto en cupo.
-- Estado: implementación inicial; no verificada por pruebas.
+- Autorización: cliente propietario, proveedor del negocio o administrador. El motivo es obligatorio para proveedor/administrador.
+- La reserva debe estar `ACTIVA` o `CONFIRMADA` y faltar al menos dos horas para la cita. Cliente/admin transicionan a `CANCELADA`; proveedor a `CANCELADA_POR_EL_PROVEEDOR`.
+- El dominio aplica State: `EstadoReserva` crea el objeto de estado desde el valor persistido; el estado cancelable decide el siguiente valor y el no cancelable rechaza transiciones posteriores. Se conservan los códigos persistidos y el contrato HTTP.
+- `CancelarReservaService` mantiene autorización, titularidad, tiempo y motivo; la actualización de estado y publicación del email permanecen en la transacción, con entrega del evento después del commit.
+- Archivos principales: `domain/state/`, `application/service/CancelarReservaService.java`, `infrastructure/adapter/out/persistence/ReservaRepositoryAdapter.java` y `infrastructure/adapter/in/rest/ReservaController.java`.
+- Verificación: `mvnw verify`, 36 pruebas aprobadas con H2. Incluye transiciones State e integración HTTP de cancelación del propietario; el correo se simula en la prueba.
+- Pendiente: integración/contrato PostgreSQL en este entorno; prueba específica de borde temporal, propietario no autorizado y motivo requerido; interfaz de confirmación en React.

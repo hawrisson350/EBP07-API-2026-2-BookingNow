@@ -11,8 +11,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.JsonNode;
+import co.edu.udea.bookingnow.application.port.out.EnviarEmailPort;
 import java.net.URI;
 import java.net.http.*;
 import java.time.LocalDate;
@@ -21,6 +23,10 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -30,6 +36,7 @@ class BookingNowApplicationTests {
     @LocalServerPort private int port;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private JwtEncoder encoder;
+    @MockitoBean private EnviarEmailPort email;
     private final JsonMapper mapper = JsonMapper.builder().build();
     private static final AtomicInteger SEQUENCE = new AtomicInteger(100000000);
     private final HttpClient http = HttpClient.newHttpClient();
@@ -403,16 +410,39 @@ class BookingNowApplicationTests {
         var faltaRecurso = Map.of("idServicio", idServicio, "idEmpleado", idEmpleado,
                 "fecha", fechaTexto, "hora", "09:30");
         assertThat(req("POST", "/api/reservas", faltaRecurso, cliente.token()).statusCode()).isEqualTo(400);
+        clearInvocations(email);
         var creada = req("POST", "/api/reservas", reserva, cliente.token());
         assertThat(creada.statusCode()).isEqualTo(201);
         assertThat(json(creada).at("/idCliente").asLong()).isEqualTo(cliente.id());
         assertThat(json(creada).at("/estado").asText()).isEqualTo("CONFIRMADA");
+        verify(email).enviar(eq(cliente.correo()), eq("Confirmación de tu reserva"), contains(fechaTexto));
         assertThat(req("POST", "/api/reservas", reserva, cliente.token()).statusCode()).isEqualTo(409);
         var fueraDeHorario = Map.of("idServicio", idServicio, "idEmpleado", idEmpleado, "idRecurso", idRecurso,
                 "fecha", fechaTexto, "hora", "10:15");
         assertThat(req("POST", "/api/reservas", fueraDeHorario, cliente.token()).statusCode()).isEqualTo(409);
         var despues = json(req("GET", rutaDisponibilidad, null, null));
         for (JsonNode slot : despues) assertThat(slot.get("hora").asText()).isNotEqualTo("09:00");
+    }
+
+    @Test void cancelarReservaNotificaAlCorreoDelClienteAsociado() throws Exception {
+        var cliente = cuenta(false);
+        var proveedor = cuenta(true);
+        long idNegocio = crearNegocio(proveedor);
+        LocalDate fecha = LocalDate.now(java.time.ZoneId.of("America/Bogota")).plusDays(2);
+        String base = "/api/negocios/" + idNegocio;
+        var horario = List.of(Map.of("dia", fecha.getDayOfWeek().name(), "horaApertura", "09:00", "horaCierre", "12:00"));
+        assertThat(req("PUT", base + "/horarios", horario, proveedor.token()).statusCode()).isEqualTo(200);
+        long idServicio = json(req("POST", base + "/servicios", servicio(), proveedor.token())).at("/datos/idServicio").asLong();
+        var reserva = Map.of("idServicio", idServicio, "fecha", fecha.toString(), "hora", "09:00");
+        var creada = req("POST", "/api/reservas", reserva, cliente.token());
+        assertThat(creada.statusCode()).isEqualTo(201);
+        long idReserva = json(creada).get("idReserva").asLong();
+
+        clearInvocations(email);
+        var cancelada = req("POST", "/api/reservas/" + idReserva + "/cancelacion", null, cliente.token());
+        assertThat(cancelada.statusCode()).isEqualTo(200);
+        assertThat(json(cancelada).get("estado").asText()).isEqualTo("CANCELADA");
+        verify(email).enviar(eq(cliente.correo()), eq("Actualización de tu reserva"), contains("cancelada correctamente"));
     }
     @Test void servicioSeAsociaYListaConPrecioCero() throws Exception {
         var c=cuenta(true);long id=crearNegocio(c);String ruta="/api/negocios/"+id+"/servicios";

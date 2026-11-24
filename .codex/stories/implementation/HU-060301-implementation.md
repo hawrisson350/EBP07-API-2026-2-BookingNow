@@ -1,9 +1,9 @@
 # Implementación — HU-060301 Recibir confirmación de reserva
 
 - Azure PBI 35, Sprint 3.
-- Al crear reserva, la aplicación publica un email con nombre de usuario, fecha y hora. El evento se despacha tras commit.
-- Arquitectura: puerto `PublicarEmailPort`; adaptador Spring de publicación de eventos; listener transaccional; puerto `EnviarEmailPort`; adaptador Resend en infraestructura.
-- Configuración: `RESEND_API_KEY` y `RESEND_FROM`; `RESEND_BASE_URL` opcional. La clave se configura fuera del repositorio.
-- Sin configuración, el backend registra `no_configurado`; la reserva persiste y el email no se envía.
-- Verificación: compilación Maven sin pruebas ejecutadas. Envío real pendiente de configurar/verificar dominio y confirmar recepción.
-- Estado: integración inicial preparada; entrega del correo no verificada.
+- Al registrar una reserva, el servicio la crea en estado `CONFIRMADA` y publica un evento de email para el correo guardado en la cuenta del cliente.
+- El evento se procesa después del commit mediante `PublicarEmailPort`, `EmailEventListener` y `EnviarEmailPort`.
+- Resend toma el remitente de `RESEND_FROM` y la clave de `RESEND_API_KEY`, ambas fuera del código. En EC2 se verificó el remitente de prueba `BookingNow <onboarding@resend.dev>`.
+- La prueba de integración verifica que se publique la confirmación al correo dinámico del cliente; el adaptador está simulado en la suite.
+- El equipo confirmó que la clave configurada funciona y que Resend entrega desde `onboarding@resend.dev` al Gmail autorizado. Esta es evidencia manual reportada por el equipo, separada de la prueba automatizada.
+- Estado: flujo implementado. La entrega a cualquier destinatario requiere un dominio de remitente verificado; el remitente de prueba de Resend está limitado a destinatarios permitidos por esa cuenta.

@@ -4,6 +4,7 @@ import co.edu.udea.bookingnow.application.port.out.EnviarEmailPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@ConditionalOnProperty(name = "bookingnow.email.provider", havingValue = "resend", matchIfMissing = true)
 public class ResendEmailAdapter implements EnviarEmailPort {
     private static final Logger log = LoggerFactory.getLogger(ResendEmailAdapter.class);
     private final String apiKey;

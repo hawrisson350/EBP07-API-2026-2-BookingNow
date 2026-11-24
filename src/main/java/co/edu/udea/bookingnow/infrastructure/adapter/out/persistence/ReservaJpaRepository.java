@@ -24,9 +24,9 @@ public interface ReservaJpaRepository extends JpaRepository<ReservaJpaEntity,Lon
         "and (:idNegocio is null or n.idNegocio = :idNegocio) " +
         "and (:idServicio is null or s.idServicio = :idServicio) " +
         "and (:idRecurso is null or rec.idRecurso = :idRecurso) " +
-        "and (:estado is null or upper(r.estado) = upper(:estado)) " +
-        "and (:desde is null or r.fecha >= :desde) " +
-        "and (:hasta is null or r.fecha <= :hasta) " +
+        "and (:estado = '' or upper(r.estado) = :estado) " +
+        "and r.fecha >= coalesce(:desde, r.fecha) " +
+        "and r.fecha <= coalesce(:hasta, r.fecha) " +
         "order by r.fecha asc, r.hora asc")
  List<ReservaJpaEntity> consultarParaReporte(@Param("idProveedor") Long idProveedor,
         @Param("idNegocio") Long idNegocio, @Param("idServicio") Long idServicio,

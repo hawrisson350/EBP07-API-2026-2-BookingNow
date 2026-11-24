@@ -1,8 +1,16 @@
 # Pruebas — HU-070102 Exportar reportes PDF/Excel
 
-- Fecha: 2026-11-22
+- Fecha: 2026-11-23
 - Implementación: [HU-070102](../implementation/HU-070102-implementation.md), Azure PBI 94.
-- Estado: pendiente; no se ejecutaron pruebas ni revisión visual de los archivos.
+- Estado: generación HTTP verificada en EC2; revisión visual y del contenido pendiente.
+
+## Evidencia ejecutada
+
+- PDF de `RESERVAS`: `200`, `application/pdf`, adjunto `bookingnow-reservas-todo-hoy.pdf`.
+- Excel de `RESERVAS`: `200`, `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, adjunto `.xlsx`.
+- PDF de `USO_SERVICIOS_RECURSOS`: `200`, `application/pdf`.
+- Excel de `USO_SERVICIOS_RECURSOS`: `200`, MIME XLSX.
+- Los cuatro archivos tuvieron contenido no vacío. No se guardaron en EC2.
 
 ## Comprobaciones pendientes
 

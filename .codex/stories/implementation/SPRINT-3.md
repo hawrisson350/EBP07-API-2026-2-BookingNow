@@ -11,10 +11,11 @@
 | HU-070101 / PBI 87 | [Reportes con filtros](HU-070101-implementation.md) |
 | HU-070102 / PBI 94 | [Exportación PDF/Excel](HU-070102-implementation.md) |
 
-## Pendientes visibles
+## Verificación y pendientes visibles
 
-- HU-060302 recordatorio: programado para 24 horas antes; falta validar por pruebas y enviar con Resend configurado.
-- Resend está integrado mediante `RESEND_API_KEY` y `RESEND_FROM`; falta configurar remitente y comprobar entrega real.
-- Aplicar y validar el contrato SQL actualizado en PostgreSQL/Supabase; no se ejecutó remotamente.
-- No se ejecutaron pruebas de comportamiento ni de integración en PostgreSQL.
-- HU-A11Y-01/02 se implementan/evidencian en React; el servicio de logs se planificará posteriormente.
+- `mvnw verify` ejecutado el 2026-11-24: 36 pruebas aprobadas, 0 fallas, con H2. Se añadieron verificaciones de correo de confirmación/cancelación con adaptador simulado y transiciones State. No equivale a una prueba contra PostgreSQL ni a envío automático real.
+- El equipo confirmó una prueba manual de Resend con `onboarding@resend.dev` al Gmail permitido. La EC2 usa el remitente configurado en `RESEND_FROM`; el destinatario se toma de la cuenta del cliente asociada a la reserva.
+- HU-060302 recordatorio: el scheduler está configurado a 24 horas antes; falta una prueba controlada de ejecución y recepción. Los fallos no se reintentan actualmente.
+- El contrato SQL y concurrencia todavía requieren verificarse contra el esquema y entorno de PostgreSQL/Supabase utilizados por el equipo.
+- HU-A11Y-01/02 corresponden al frontend React; validar allí con el equipo. El backend no sustituye esa evidencia.
+- El inventario de demo, matriz de pruebas y guía para mostrar el dashboard están en `docs/demo/guion-demo-api-logs-y-inventario.md`.

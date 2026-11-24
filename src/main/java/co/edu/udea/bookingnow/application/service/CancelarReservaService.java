@@ -7,6 +7,8 @@ import co.edu.udea.bookingnow.domain.exception.AccesoDenegadoException;
 import co.edu.udea.bookingnow.domain.exception.ConflictoException;
 import co.edu.udea.bookingnow.domain.exception.NoEncontradoException;
 import co.edu.udea.bookingnow.domain.model.Reserva;
+import co.edu.udea.bookingnow.domain.state.ActorCancelacion;
+import co.edu.udea.bookingnow.domain.state.EstadoReserva;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Locale;
@@ -37,10 +39,9 @@ public class CancelarReservaService implements CancelarReservaUseCase {
             throw new AccesoDenegadoException("Solo el cliente propietario, el proveedor del negocio o un administrador pueden cancelar esta reserva");
         }
 
-        String estado = detalle.estado().toUpperCase(Locale.ROOT);
-        if (!estado.equals("ACTIVA") && !estado.equals("CONFIRMADA")) {
-            throw new ConflictoException("La reserva no está en un estado que permita cancelación");
-        }
+        ActorCancelacion actor = proveedorPropietario ? ActorCancelacion.PROVEEDOR
+                : administrador ? ActorCancelacion.ADMINISTRADOR : ActorCancelacion.CLIENTE;
+        String estadoNuevo = EstadoReserva.desde(detalle.estado()).cancelar(actor).codigo();
         LocalDateTime cita = LocalDateTime.of(detalle.fecha(), detalle.hora());
         if (LocalDateTime.now(ZONA_PROYECTO).plusHours(2).isAfter(cita)) {
             throw new ConflictoException("La reserva solo se puede cancelar hasta dos horas antes de la cita");
@@ -49,7 +50,6 @@ public class CancelarReservaService implements CancelarReservaUseCase {
             throw new IllegalArgumentException("Indica el motivo de la cancelación");
         }
 
-        String estadoNuevo = proveedorPropietario ? "CANCELADA_POR_EL_PROVEEDOR" : "CANCELADA";
         Reserva cancelada = reservas.actualizarEstado(idReserva, estadoNuevo);
         String asunto = "Actualización de tu reserva";
         String contenido = clientePropietario
